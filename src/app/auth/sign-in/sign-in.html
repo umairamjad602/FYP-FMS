@@ -1,0 +1,35 @@
+<div class="sign-in-bg">
+    <div class="card p-4 card-width m-2">
+        <div class="card-body">
+            <div class=" text-center">
+                <h3 class="card-title mb-3">Sign in</h3>
+                <div>Need an account? <a href="javascript:;" class="text-decoration-none text-dark fw-bold"
+                        routerLink="/sign-up">Sign up</a>
+                </div>
+            </div>
+            <hr class="my-4 text-muted">
+            <div>
+                <form [formGroup]="signInForm" (ngSubmit)="signInUser()">
+                    <div class="mb-3">
+                        <label for="email" class="form-label">Email</label>
+                        <input type="text" name="email" id="email" placeholder="email@example.com"
+                            formControlName="email" class="form-control ">
+                        <p class="text-danger fw-normal" *ngIf="email?.errors?.['required'] && email?.touched">Email is
+                            required</p>
+                        <p class="text-danger fw-normal" *ngIf="email?.errors?.['email'] && email?.touched">Enter valid
+                            Email address</p>
+                    </div>
+                    <div class="mb-4">
+                        <label for="password" class="form-label">Password</label>
+                        <input type="password" class="form-control" placeholder="Enter Password" name="password"
+                            formControlName="password" id="password">
+                        <p class="text-danger fw-normal" *ngIf="password?.errors?.['required'] && password?.touched">
+                            Password is required</p>
+                    </div>
+                    <button type="submit" class="btn w-100 bg-primary text-white" [disabled]="signInForm.invalid">Sign
+                        In</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>

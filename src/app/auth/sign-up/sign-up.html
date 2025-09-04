@@ -1,0 +1,72 @@
+<div class="sign-in-bg">
+    <div class="card p-4 card-width m-2">
+        <div class="card-body">
+            <div class="text-center mb-3">
+                <h3 class="card-title">Sign up</h3>
+                <div>Already have an account? <a href="javascript:;" class="text-decoration-none text-dark fw-bold"
+                        routerLink="">Sign in</a>
+                </div>
+            </div>
+            <div>
+                <form [formGroup]="createUserForm" (ngSubmit)="createUser()" novalidate>
+
+                    <div class="mb-2">
+                        <label for="name" class="form-label m-0">Name</label>
+                        <input type="text" id="name" formControlName="name" class="form-control form-control-sm"
+                            placeholder="Enter Name">
+                        <p class="text-danger fw-normal" *ngIf="name?.errors?.['required'] && name?.touched">Name is
+                            required</p>
+                    </div>
+
+                    <div class="mb-2">
+                        <label for="surName" class="form-label m-0">Surname</label>
+                        <input type="text" id="surName" formControlName="surName" class="form-control form-control-sm"
+                            placeholder="Enter Surname">
+                        <p class="text-danger fw-normal" *ngIf="surName?.errors?.['required'] && surName?.touched">
+                            Surname is required</p>
+                    </div>
+
+                    <div class="mb-2">
+                        <label for="userName" class="form-label m-0">Username</label>
+                        <input type="text" id="userName" formControlName="userName" class="form-control form-control-sm"
+                            placeholder="Enter Username">
+                        <p class="text-danger fw-normal" *ngIf="userName?.errors?.['required'] && userName?.touched">
+                            Username is required</p>
+                    </div>
+
+                    <div class="mb-2">
+                        <label for="email" class="form-label m-0">Email</label>
+                        <input type="text" id="email" formControlName="email" class="form-control form-control-sm"
+                            placeholder="email@example.com">
+                        <p class="text-danger fw-normal" *ngIf="email?.errors?.['required'] && email?.touched">Email is
+                            required</p>
+                        <p class="text-danger fw-normal" *ngIf="email?.errors?.['email'] && email?.touched">Enter valid
+                            email address</p>
+                    </div>
+
+                    <div class="mb-2">
+                        <label for="preferredLanguage" class="form-label m-0">Preferred Language</label>
+                        <input type="text" id="preferredLanguage" formControlName="preferredLanguage"
+                            class="form-control form-control-sm" placeholder="Enter Language">
+                        <p class="text-danger fw-normal"
+                            *ngIf="preferredLanguage?.errors?.['required'] && preferredLanguage?.touched">
+                            Language is required
+                        </p>
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="password" class="form-label m-0">Password</label>
+                        <input type="password" id="password" formControlName="password"
+                            class="form-control form-control-sm" placeholder="Enter Password">
+                        <p class="text-danger fw-normal" *ngIf="password?.errors?.['required'] && password?.touched">
+                            Password is required</p>
+                    </div>
+
+                    <button type="submit" class="btn w-100 bg-primary text-white" [disabled]="createUserForm.invalid">
+                        Register
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
