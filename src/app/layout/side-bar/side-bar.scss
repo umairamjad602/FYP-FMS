@@ -1,0 +1,37 @@
+.sidebar {
+    height: 100vh;
+    display: flex;
+    flex-direction: column;
+    position: sticky;
+    top: 0;
+    background-color: #F9F9F9;
+    border-right: 1px solid lightgray;
+}
+
+.sidebar-header {
+    padding: 0.5rem;
+    flex: 0 0 auto;
+}
+
+.sidebar-main {
+    flex: 1 1 auto;
+    overflow-y: auto;
+}
+
+.sidebar-footer {
+    padding: 0.5rem;
+    flex: 0 0 auto;
+}
+
+.sidebar-items {
+    list-style: none;
+    padding: 0.5rem;
+    cursor: pointer;
+    &:hover {
+        background-color: lightgray;
+    }
+}
+
+.sidebar-active {
+    background-color: lightgray;
+}

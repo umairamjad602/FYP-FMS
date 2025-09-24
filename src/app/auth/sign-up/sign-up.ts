@@ -51,7 +51,10 @@ export class SignUp {
     try {
       await firstValueFrom(this.authService.createUser(payload));
       this.toastrService.success("User created successfully!");
-      this.router.navigate(['']);
+      const loginPayload = { email: payload.email, password: payload.password };
+      await firstValueFrom(this.authService.loginUser(loginPayload));
+  
+      this.router.navigate(['/dashboard']);
     } catch (err: any) {
       if (err.status === 409) {
         this.toastrService.error('User with this email or username already exists.');
@@ -64,4 +67,5 @@ export class SignUp {
       }
     }
   }
+  
 }

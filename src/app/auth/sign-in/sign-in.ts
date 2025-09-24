@@ -47,7 +47,13 @@ export class SignIn extends AbstractBaseComponent {
 
   public async signInUser() {
     try {
-      await firstValueFrom(this.authService.loginUser(this.signInForm.value));
+      const response: any = await firstValueFrom(this.authService.loginUser(this.signInForm.value));
+  
+      // 🟢 If backend sends { token: "..." }, extract it
+      const token = response.token;
+  
+      localStorage.setItem('authToken', token);
+  
       this.toastrService.success('Logged in successfully');
       this.router.navigate(['/dashboard']);
     } catch (error: any) {
@@ -58,4 +64,6 @@ export class SignIn extends AbstractBaseComponent {
       }
     }
   }
+  
+  
 }
