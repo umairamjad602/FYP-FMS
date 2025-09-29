@@ -49,7 +49,6 @@ export class SignIn extends AbstractBaseComponent {
     try {
       const response: any = await firstValueFrom(this.authService.loginUser(this.signInForm.value));
   
-      // 🟢 If backend sends { token: "..." }, extract it
       const token = response.token;
   
       localStorage.setItem('authToken', token);

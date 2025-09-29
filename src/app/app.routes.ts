@@ -4,7 +4,7 @@ import { SignUp } from './auth/sign-up/sign-up';
 import { Dashboard } from './components/dashboard/dashboard';
 import { AuthGuard } from './core/guards/auth.guard';
 import { Layout } from './layout/layout/layout';
-import { Members } from './components/members/members';
+import { Members } from './components/member/members/members';
 import { Trainers } from './components/trainers/trainers';
 import { SubscriptionsPlans } from './components/subscriptions-plans/subscriptions-plans';
 import { Payments } from './components/payments/payments';
@@ -29,9 +29,13 @@ export const routes: Routes = [
     canActivateChild: [AuthGuard],
     children: [
       { path: 'dashboard', component: Dashboard },
-      { path: '', redirectTo: 'dashboard', pathMatch: 'full' }
-      ,{
+      { path: '', redirectTo: 'dashboard', pathMatch: 'full' },
+      {
         path: 'members',
+        component: Members
+      },
+      {
+        path: 'members/:id',
         component: Members
       },
       {

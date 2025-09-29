@@ -4,8 +4,9 @@ import { Component, Input } from '@angular/core';
   selector: 'app-header',
   imports: [],
   templateUrl: './header.html',
-  styleUrl: './header.scss'
+  styleUrl: './header.scss',
+  standalone: true
 })
 export class Header {
-  @Input() title: string = 'Flight Management System';
+  @Input() title: string = 'Fitness Management System';
 }

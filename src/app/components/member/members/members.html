@@ -1,0 +1,98 @@
+<div class="row m-0">
+    <div class="col-4 wrap-listing p-0">
+        <div class="listing-header">
+            <div class="d-flex justify-content-between align-items-center p-2">
+                <h5>Members</h5>
+                <a href="javascript:;"><i class="bg-primary fa fa-plus text-white rounded-circle fs-4 p-1" (click)="createUpdateMemberModal()"></i></a>
+            </div>
+            <div class="my-2 px-2">
+                <input type="text" class="form-control form-control-sm rounded-pill ps-2 p-1" placeholder="Search">
+            </div>
+        </div>
+        <div class="listing-main px-2">
+            <ul class="p-0 m-0">
+                <li class="listing-items" *ngFor="let member of membersList" [routerLink]="['/members', member.id]"
+                    routerLinkActive="listing-active" [routerLinkActiveOptions]="{ exact: true }">
+                    {{ member?.fullName }}
+                </li>
+            </ul>
+        </div>
+        <div class="listing-footer text-center border-top border-0">
+            <a href="javascript:;" class="text-decoration-none text-primary">Load More</a>
+        </div>
+    </div>
+    <h5 *ngIf="!selectedMember" class="col-8 p-0 d-flex justify-content-center align-items-center text-secondary">Select member to view details</h5>
+    <div *ngIf="selectedMember" class="col-8 p-0">
+        <div class="single-view">
+            <div class="single-view-header">
+                <div class="d-flex justify-content-between p-2">
+                    <div class="d-flex gap-3">
+                        <img src="assets/images/person.svg" class="border p-1 shadow" height="130" alt="">
+                        <h5 class="py-2">{{selectedMember?.fullName}}</h5>
+                    </div>
+                    <div>
+                        <div class="dropdown">
+                            <a href="#" class="d-flex align-items-center link-dark btn btn-sm btn-light btn-active-light-primary text-decoration-none dropdown-toggle"
+                                data-bs-toggle="dropdown" aria-expanded="false">
+                                <span>More</span>
+                            </a>
+                            <ul class="dropdown-menu text-small shadow">
+                                <li><a class="dropdown-item" href="javascript:;" (click)="createUpdateMemberModal(this.selectedMember)"><i class="fa fa-edit me-2 text-secondary"></i>Update</a></li>
+                                <li><a (click)="deleteMember(selectedMember?.id)" class="dropdown-item" href="javascript:;"><i class="fa fa-trash me-2 text-secondary"></i>Delete</a></li>
+
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+                <div class="d-flex gap-4 tabs mt-5">
+                    <div *ngFor="let tab of tabs" (click)="setActive(tab.id)"
+                        [ngClass]="{'active-tab': activeTabId == tab.id}" class="tab-item">{{tab.title}}</div>
+                </div>
+            </div>
+            <div class="single-view-main mb-2" *ngIf="activeTabId==1">
+                <p class="mb-2"><span class="label">Name :</span> {{selectedMember?.fullName ?? '--'}}</p>
+                <p class="mb-2"><span class="label">Email :</span> {{selectedMember?.email ?? '--'}}</p>
+                <p class="mb-2"><span class="label">Username :</span> {{selectedMember?.username ?? '--'}}</p>
+                <p class="mb-2"><span class="label">Phone :</span> {{selectedMember?.phone ?? '--'}}</p>
+                <p class="mb-2"><span class="label">DOB :</span> {{selectedMember?.dob ?? '--'}}</p>
+                <p class="mb-2"><span class="label">Address :</span> {{selectedMember?.address ?? '--'}}</p>
+              </div>
+              
+            <div class="single-view-main mb-2" *ngIf="activeTabId==2">Lorem ipsum dolor, sit amet consectetur
+                adipisicing elit. Libero cum saepe et officia eum non nesciunt aut corrupti. Dolorem id inventore
+                repellat aut, necessitatibus facere minima et porro modi ipsam esse fugiat? Non eligendi facilis vero
+                voluptate quam, illo suscipit corporis vel dignissimos delectus explicabo consequuntur illum repellendus
+                quaerat id aut sunt officia placeat ratione sint sit architecto. Expedita porro fuga labore similique
+                atque. Tempore autem, atque ullam, perspiciatis perferendis nisi natus similique dolore neque,
+                recusandae quas exercitationem optio. Porro, ut eos. Dolor aperiam asperiores quaerat! Tempore accusamus
+                sequi nam, praesentium numquam doloremque aut saepe deleniti eaque blanditiis recusandae. Dolore.
+            </div>
+            <div class="single-view-main mb-2" *ngIf="activeTabId==3">
+                qui iusto error quo aspernatur accusamus saepe suscipit. Doloremque cupiditate quaerat aliquam, quisquam
+                aspernatur quasi deleniti sit dignissimos obcaecati vero quae modi optio repudiandae adipisci pariatur
+                natus dolor quidem! Quis temporibus repudiandae eum aut, hic distinctio aliquid reiciendis officia
+                voluptatibus ut iste, similique commodi. Voluptate delectus natus modi libero magni veritatis. Natus
+                placeat at odit. Labore facilis assumenda eius est reiciendis harum cupiditate odit ducimus sunt
+                explicabo adipisci dicta animi veritatis vel aliquam, asperiores officia dignissimos alias nostrum
+                minima architecto! Pariatur minus voluptatum quisquam nulla tempora, ratione deserunt illo corrupti id
+                inventore. Quam facere nobis dignissimos! Rerum et voluptates dolorem, id eius deserunt. Ratione
+                suscipit quibusdam sapiente aut error, quam unde quidem harum mollitia. Quaerat, voluptatibus adipisci
+                nisi tempora possimus reiciendis culpa tenetur, id eaque, explicabo placeat officia ab amet totam
+                nostrum! Nihil quasi aliquid animi harum reprehenderit quia deleniti veniam omnis vel! Amet totam sequi
+                deleniti harum ab ipsa magnam laborum repudiandae, accusantium illo qui corrupti odit beatae. Hic a
+                neque fuga maiores suscipit expedita nisi tempora aut? Facilis fuga quam vitae ad ab maiores id iste
+                sunt. At. ic harum ut laudantium nesciunt autem tenetur
+                repellat, deserunt deleniti illo ratione, architecto ipsum facilis qui sequi? Deleniti, totam tempore.
+                Eveniet necessitatibus nisi a, cupiditate facere iure id error quidem obcaecati impedit laudantium
+                corrupti iusto fuga dolor voluptatem totam nihil distinctio laborum. Sed maiores facilis nulla aut
+                pariatur iusto dicta eveniet perferendis delectus nemo.
+                lorem200
+            </div>
+            <div class="single-view-main mb-2" *ngIf="activeTabId==4"> corrupti iusto fuga dolor voluptatem totam nihil
+                distinctio laborum. Sed maiores facilis nulla aut
+                pariatur iusto dicta eveniet perferendis delectus nemo.
+                lorem200
+            </div>
+        </div>
+    </div>
+</div>
