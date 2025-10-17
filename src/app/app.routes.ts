@@ -5,7 +5,7 @@ import { Dashboard } from './components/dashboard/dashboard';
 import { AuthGuard } from './core/guards/auth.guard';
 import { Layout } from './layout/layout/layout';
 import { Members } from './components/member/members/members';
-import { Trainers } from './components/trainers/trainers';
+import { Trainers } from './components/trainer/create-update-trainer/trainers/trainers';
 import { SubscriptionsPlans } from './components/subscriptions-plans/subscriptions-plans';
 import { Payments } from './components/payments/payments';
 import { Attendance } from './components/attendance/attendance';
@@ -45,6 +45,10 @@ export const routes: Routes = [
       },
       {
         path: 'trainers',
+        component: Trainers
+      },
+      {
+        path: 'trainers/:id',
         component: Trainers
       },
       {

@@ -6,7 +6,7 @@
                 <a href="javascript:;"><i class="bg-primary fa fa-plus text-white rounded-circle fs-4 p-1" (click)="createUpdateMemberModal()"></i></a>
             </div>
             <div class="my-2 px-2">
-                <input type="text" class="form-control form-control-sm rounded-pill ps-2 p-1" placeholder="Search">
+                <input type="search" [(ngModel)]="searchText" (keyup.enter)="applySearch()" class="form-control form-control-sm rounded-pill ps-2 p-1" placeholder="Search">
             </div>
         </div>
         <div class="listing-main px-2">
@@ -52,9 +52,9 @@
             <div class="single-view-main mb-2" *ngIf="activeTabId==1">
                 <p class="mb-2"><span class="label">Name :</span> {{selectedMember?.fullName ?? '--'}}</p>
                 <p class="mb-2"><span class="label">Email :</span> {{selectedMember?.email ?? '--'}}</p>
-                <p class="mb-2"><span class="label">Username :</span> {{selectedMember?.username ?? '--'}}</p>
+                <p class="mb-2"><span class="label">Username :</span> {{selectedMember?.userName ?? '--'}}</p>
                 <p class="mb-2"><span class="label">Phone :</span> {{selectedMember?.phone ?? '--'}}</p>
-                <p class="mb-2"><span class="label">DOB :</span> {{selectedMember?.dob ?? '--'}}</p>
+                <p class="mb-2"><span class="label">DOB :</span> {{(selectedMember?.dateOfBirth | date) ?? '--'}}</p>
                 <p class="mb-2"><span class="label">Address :</span> {{selectedMember?.address ?? '--'}}</p>
               </div>
               
