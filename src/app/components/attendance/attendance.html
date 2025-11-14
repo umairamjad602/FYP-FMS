@@ -1,1 +1,69 @@
-<p>attendance works!</p>
+<div class="attendance-container">
+    <div class="attendance-header">
+        <h2>Mark Member Attendance</h2>
+        <div class="date-info">
+            <span>Today: {{ currentDate | date:'fullDate' }}</span>
+        </div>
+    </div>
+
+    <div class="attendance-table">
+        <table>
+            <thead>
+                <tr>
+                    <th>Member ID</th>
+                    <th>Member Name</th>
+                    <th>Status</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr *ngFor="let member of assignedMembers">
+                    <td>{{ member.id }}</td>
+                    <td>{{ member.fullName }}</td>
+                    <td [class]="getStatusClass(member.status)">
+                        {{ member.status? member.status : "--" }}
+                    </td>
+                    <td class="action-buttons">
+                        <button class="btn-present" (click)="markPresent(member)"
+                            [class.active]="member.status === 'Present'">
+                            Present
+                        </button>
+                        <button class="btn-absent" (click)="markAbsent(member)"
+                            [class.active]="member.status === 'Absent'">
+                            Absent
+                        </button>
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+
+    <div class="action-buttons-footer">
+        <button class="btn-save" (click)="saveAttendance(this.assignedMembers)">Save Attendance</button>
+    </div>
+
+    <div class="attendance-table">
+        <table>
+            <thead>
+                <tr>
+                    <th>Member ID</th>
+                    <th>Member Name</th>
+                    <th>Marked By</th>
+                    <th>Status</th>
+                    <th>Date</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr *ngFor="let history of attendanceHistory">
+                    <th>{{history.memberId}}</th>
+                    <th>{{history.memberName}}</th>
+                    <th>{{history.markedBy}}</th>
+                    <th>{{history.status}}</th>
+                    <td>
+                        {{ history.markedTime | date:'fullDate' }}
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+</div>

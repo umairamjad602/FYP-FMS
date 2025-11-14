@@ -1,82 +1,83 @@
 import { CommonModule } from '@angular/common';
-import { Component } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
 import { RouterModule } from '@angular/router';
 import { Auth } from '../../auth/services/auth';
 
 @Component({
   selector: 'app-side-bar',
+  standalone: true,
   imports: [CommonModule, RouterModule],
   templateUrl: './side-bar.html',
-  styleUrl: './side-bar.scss',
-  standalone: true
+  styleUrl: './side-bar.scss'
 })
-export class SideBar {
-  constructor(
-    private authService: Auth
-  ) { }
+export class SideBar implements OnInit {
+
+  public sideBarItems: any[] = [];
+  public role: string | null = '';
+  public userName: string = '';
+
+  constructor(private authService: Auth) { }
+
+  ngOnInit(): void {
+    this.role = localStorage.getItem('role');
+    this.userName = this.role ?? 'User';
+    this.loadSidebarItems();
+  }
 
   public logout() {
     this.authService.logout();
     window.location.reload();
   }
-  public sideBarItems: any[] = [
-      {
-        name: 'Dashboard',
-        icon: 'fa-solid fa-house',
-        route: '/dashboard',
-        active: false
-      },
-      {
-        name: 'Members',
-        icon: 'fa-solid fa-users',
-        route: '/members',
-        active: false
-      },
-      {
-        name: 'Trainers',
-        icon: 'fa-solid fa-user-tie',
-        route: '/trainers',
-        active: false
-      },
-      {
-        name: 'Plans',
-        icon: 'fa-solid fa-list-check',
-        route: '/subscriptions-plans',
-        active: false
-      },
-      {
-        name: 'Payments',
-        icon: 'fa-solid fa-credit-card',
-        route: '/payments',
-        active: false
-      },
-      {
-        name: 'Attendance',
-        icon: 'fa-solid fa-clipboard-check',
-        route: '/attendance',
-        active: false
-      },
-      {
-        name: 'Reports',
-        icon: 'fa-solid fa-chart-line',
-        route: '/reports',
-        active: false
-      },
-      {
-        name: 'Notifications',
-        icon: 'fa-solid fa-bell',
-        route: '/notifications',
-        active: false
-      },
-      {
-        name: 'Settings',
-        icon: 'fa-solid fa-gear',
-        route: '/settings',
-        active: false
-      }
-  ]
 
-  public activateSideBarItem(sideBarItem: any) {
-    sideBarItem.active = true;
+  private loadSidebarItems(): void {
+    switch (this.role) {
+
+      case 'Admin':
+        this.sideBarItems = [
+          { name: 'Dashboard', icon: 'fa-solid fa-house', route: '/dashboard' },
+          { name: 'Members', icon: 'fa-solid fa-users', route: '/members' },
+          { name: 'Trainers', icon: 'fa-solid fa-user-tie', route: '/trainers' },
+          { name: 'Plans', icon: 'fa-solid fa-list-check', route: '/subscriptions-plans' },
+          { name: 'Payments', icon: 'fa-solid fa-credit-card', route: '/payments' },
+          { name: 'Attendance', icon: 'fa-solid fa-clipboard-check', route: '/attendance' },
+          { name: 'Reports', icon: 'fa-solid fa-chart-line', route: '/reports' },
+          { name: 'Notifications', icon: 'fa-solid fa-bell', route: '/notifications' },
+          { name: 'Settings', icon: 'fa-solid fa-gear', route: '/settings' }
+        ];
+        break;
+
+      case 'Trainer':
+        this.sideBarItems = [
+          { name: 'Dashboard', icon: 'fa-solid fa-house', route: '/dashboard' },
+          { name: 'Workout Plans', icon: 'fa-solid fa-dumbbell', route: '/workout-plans' },
+          { name: 'Diet Plans', icon: 'fa-solid fa-apple-whole', route: '/diet-plans' },
+          { name: 'Appointments', icon: 'fa-solid fa-calendar-check', route: '/appointments' },
+          { name: 'Attendance', icon: 'fa-solid fa-clipboard-check', route: '/attendance' },
+          { name: 'Settings', icon: 'fa-solid fa-gear', route: '/settings' }
+        ];
+        break;
+
+      case 'Member':
+        this.sideBarItems = [
+          { name: 'Dashboard', icon: 'fa-solid fa-house', route: '/dashboard' },
+          { name: 'My Profile', icon: 'fa-solid fa-user', route: '/profile' },
+          { name: 'Membership Plan', icon: 'fa-solid fa-list-check', route: '/membership-plan' },
+          { name: 'Workout Plan', icon: 'fa-solid fa-dumbbell', route: '/workout-plans' },
+          { name: 'Diet Plan', icon: 'fa-solid fa-apple-whole', route: '/diet-plans' },
+          { name: 'Progress', icon: 'fa-solid fa-chart-line', route: '/progress' },
+          { name: 'Book Appointment', icon: 'fa-solid fa-calendar-plus', route: '/appointments' },
+          { name: 'Payments', icon: 'fa-solid fa-credit-card', route: '/payments' },
+          { name: 'Reviews', icon: 'fa-solid fa-star', route: '/reviews' },
+          { name: 'Settings', icon: 'fa-solid fa-gear', route: '/settings' }
+        ];
+        break;
+
+      // Fallback (no role found)
+      default:
+        this.sideBarItems = [
+          { name: 'Dashboard', icon: 'fa-solid fa-house', route: '/dashboard' }
+        ];
+        break;
+    }
   }
 }

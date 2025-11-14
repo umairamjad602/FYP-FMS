@@ -1,0 +1,179 @@
+<div class="diet-plans-container">
+    <!-- Header -->
+    <div class="header">
+      <h2>Diet Plans</h2>
+      <div class="role-info">
+        <span class="role-badge">Role: {{ role }}</span>
+        <span *ngIf="isTrainer()" class="trainer-info">Trainer: {{ getTrainerName() }}</span>
+      </div>
+    </div>
+  
+    <!-- Trainer Form Section -->
+    <div *ngIf="role === 'Trainer'" class="trainer-section">
+      <div class="form-card">
+        <h3>{{ isEditing ? 'Update Diet Plan' : 'Create New Diet Plan' }}</h3>
+        
+        <form [formGroup]="dietForm" (ngSubmit)="onSubmit()" class="diet-form">
+          <div class="form-row">
+            <div class="form-group">
+              <label>Plan Title *</label>
+              <input type="text" formControlName="title" class="form-input" placeholder="Enter plan title">
+            </div>
+            
+            <div class="form-group">
+              <label>Daily Calories *</label>
+              <input type="number" formControlName="calories" class="form-input" placeholder="Enter calories">
+            </div>
+          </div>
+  
+          <div class="form-group">
+            <label>Description *</label>
+            <textarea formControlName="description" class="form-textarea" placeholder="Describe the diet plan"></textarea>
+          </div>
+  
+          <div class="macros-row">
+            <div class="form-group">
+              <label>Protein % *</label>
+              <input type="text" formControlName="protein" class="form-input" placeholder="e.g., 30%">
+            </div>
+            
+            <div class="form-group">
+              <label>Carbs % *</label>
+              <input type="text" formControlName="carbs" class="form-input" placeholder="e.g., 40%">
+            </div>
+            
+            <div class="form-group">
+              <label>Fats % *</label>
+              <input type="text" formControlName="fats" class="form-input" placeholder="e.g., 30%">
+            </div>
+          </div>
+  
+          <div class="form-actions">
+            <button type="submit" class="btn btn-primary" [disabled]="!dietForm.valid">
+              {{ isEditing ? 'Update Plan' : 'Create Plan' }}
+            </button>
+            
+            <button type="button" class="btn btn-secondary" (click)="resetForm()" *ngIf="isEditing">
+              Cancel
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  
+    <!-- Diet Plans List -->
+    <div class="plans-section">
+      <h3>
+        {{ isTrainer() ? 'My Diet Plans' : 'Available Diet Plans' }}
+        <span *ngIf="dietPlans.length > 0" class="plans-count">({{ dietPlans.length }})</span>
+      </h3>
+      
+      <div *ngIf="dietPlans.length === 0" class="no-plans">
+        <p *ngIf="isTrainer()">You haven't created any diet plans yet. Create your first plan above!</p>
+        <p *ngIf="isMember()">No diet plans available yet. Please check back later.</p>
+      </div>
+  
+      <div class="plans-grid">
+        <div *ngFor="let plan of dietPlans" class="plan-card">
+          <div class="plan-header">
+            <h4>{{ plan.title }}</h4>
+            <div class="plan-stats">
+              <span class="calories">{{ plan.calories }} calories</span>
+              <span *ngIf="isTrainer()" class="assigned-count">
+                {{ getAssignedCount(plan) }} assigned
+              </span>
+            </div>
+          </div>
+          
+          <p class="plan-description">{{ plan.description }}</p>
+          
+          <div class="nutrition-info">
+            <div class="nutrient">
+              <span>Protein: {{ plan.protein }}</span>
+            </div>
+            <div class="nutrient">
+              <span>Carbs: {{ plan.carbs }}</span>
+            </div>
+            <div class="nutrient">
+              <span>Fats: {{ plan.fats }}</span>
+            </div>
+          </div>
+          
+          <div class="plan-footer">
+            <div class="plan-meta">
+              <small>By {{ plan.createdBy }}</small>
+              <small>{{ plan.createdAt | date:'mediumDate' }}</small>
+              <small *ngIf="isTrainer() && !isMyPlan(plan)" class="other-trainer">
+                (Other Trainer)
+              </small>
+            </div>
+            
+            <!-- Trainer Actions - Only show for trainer's own plans -->
+            <div *ngIf="role === 'Trainer'" class="plan-actions">
+              <button class="btn-edit" (click)="editPlan(plan)" [disabled]="!isMyPlan(plan)">
+                Edit
+              </button>
+              <button class="btn-assign" (click)="openAssignModal(plan)" [disabled]="!isMyPlan(plan)">
+                Assign ({{ getAssignedCount(plan) }})
+              </button>
+              <button class="btn-delete" (click)="deletePlan(plan.id)" [disabled]="!isMyPlan(plan)">
+                Delete
+              </button>
+            </div>
+  
+            <!-- Member View -->
+            <div *ngIf="role === 'Member'" class="member-view">
+             
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  
+    <!-- Assignment Modal -->
+    <div class="modal-backdrop" *ngIf="showAssignModal && isTrainer()">
+      <div class="modal-content">
+        <div class="modal-header bg-primary text-white p-3">
+          <h5 class="modal-title">
+            Assign Diet Plan
+          </h5>
+          <button type="button" class="btn-close btn-close-white" (click)="closeAssignModal()"></button>
+        </div>
+        <div class="modal-body">
+          <div *ngIf="selectedPlanForAssign">
+            <h6>{{ selectedPlanForAssign.title }}</h6>
+            <p class="text-muted">{{ selectedPlanForAssign.description }}</p>
+            <p><small><strong>Created by:</strong> {{ selectedPlanForAssign.createdBy }}</small></p>
+  
+            <form [formGroup]="assignForm">
+              <div class="mb-3">
+                <label class="form-label fw-bold">Select Members to Assign</label>
+                <div class="members-checklist">
+                  <div class="form-check" *ngFor="let member of assignedMembers">
+                    <input class="form-check-input" type="checkbox" [id]="'member-' + member.id"
+                      [value]="member.id" [checked]="isMemberAssigned(member.id)"
+                      (change)="onMemberSelectionChange(member.id, $event)">
+                    <label class="form-check-label" [for]="'member-' + member.id">
+                      {{ member.fullName || member.name }}
+                      <small class="text-muted">({{ member.email }})</small>
+                    </label>
+                  </div>
+  
+                  <div *ngIf="assignedMembers.length === 0" class="alert alert-warning mt-3">
+                    No members assigned to you yet. Members need to be assigned to you first.
+                  </div>
+                </div>
+              </div>
+            </form>
+          </div>
+        </div>
+        <div class="modal-footer p-2 bg-light">
+          <button type="button" class="btn btn-danger me-2" (click)="closeAssignModal()">Cancel</button>
+          <button type="button" class="btn btn-primary me-2" (click)="assignDietToMembers()"
+            [disabled]="!assignForm.valid">
+            Assign to {{ assignForm.value.memberIds?.length || 0 }} Members
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>

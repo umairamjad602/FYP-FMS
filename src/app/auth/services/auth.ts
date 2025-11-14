@@ -18,10 +18,11 @@ export class Auth extends baseAPIClass {
   }
 
   loginUser(payload: { email: string; password: string }) {
-    return this.http.post<{ token: string }>(`${this.baseUrl}/Users/login`, payload).pipe(
+    return this.http.post<{ token: string; role: string;}>(`${this.baseUrl}/Users/login`, payload).pipe(
       tap((response) => {
         if (response && response.token) {
           localStorage.setItem('authToken', response.token); // store token
+          localStorage.setItem('role', response.role);
         }
       })
     );
@@ -29,6 +30,7 @@ export class Auth extends baseAPIClass {
 
   logout() {
     localStorage.removeItem('authToken');
+    localStorage.removeItem('role');
   }
 
   getToken(): string | null {
@@ -37,5 +39,16 @@ export class Auth extends baseAPIClass {
 
   isLoggedIn(): boolean {
     return !!this.getToken();
+  }
+
+  getloggedInUser(){
+    
+  }
+  public async getloggedInUserAsync() {
+    const token = this.getToken();
+    const headers = { 'Authorization': `Bearer ${token}` };
+    return await firstValueFrom(
+      this.http.get(`${this.baseUrl}/Users/profile`, { headers })
+    );
   }
 }

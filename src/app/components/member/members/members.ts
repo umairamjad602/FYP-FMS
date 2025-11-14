@@ -6,6 +6,7 @@ import { CreateUpdateMember } from '../create-update-member/create-update-member
 import { ToastrService } from 'ngx-toastr';
 import { FormsModule } from '@angular/forms';
 import { MemberService } from '../member-service';
+import { TrainerService } from '../../trainer/trainer-service';
 
 @Component({
   selector: 'app-members',
@@ -19,20 +20,27 @@ export class Members {
   public bsModalRef: NgbModalRef;
   public membersList: any[] = [];
   public searchText: string = '';
+  public trainersList: any[] = [];
+  public selectedTrainer: any;
   constructor(
     private route: ActivatedRoute,
     private ngbModalService: NgbModal,
     private toastrService: ToastrService,
     private router: Router,
-    private memberService: MemberService
+    private memberService: MemberService,
+    private trainerService: TrainerService
   ) { }
 
-  async ngOnInit() { {
+  async ngOnInit() {
     await this.getMemberListAsync();
+    await this.getTrainerListAsync();
+
     this.getSelectedMemberFromParams();
+    this.getAssignedTrainer();
+
     this.setActive(1);
   }
-  }
+
   public applySearch() {
     if (!this.searchText) {
       this.getMemberListAsync();
@@ -46,30 +54,42 @@ export class Members {
   }
 
   public getSelectedMemberFromParams() {
-    {
-      this.route.params.subscribe(params => {
-        const memberId = params['id'];
-        this.selectedMember = this.membersList.find(m => m.id === +memberId);
-        console.log(memberId, 'sel', this.selectedMember);
-        
-      })
-    }
+    this.route.params.subscribe(params => {
+      const memberId = params['id'];
+      this.selectedMember = this.membersList.find(m => m.id === +memberId);
+  
+      if (this.selectedMember && this.trainersList.length > 0) {
+        this.getAssignedTrainer();
+      }
+    });
   }
+  
   public async getMemberListAsync() {
-    const response:any = await this.memberService.getMembersAsync();
-    console.log(response, 'rsp');
+    const response: any = await this.memberService.getMembersAsync();
     this.membersList = response;
   }
 
   public tabs = [
     { id: 1, title: "Member Details" },
     { id: 2, title: "Payment History" },
-    { id: 3, title: "Attendance" },
+    { id: 3, title: "Assign Trianer" },
     { id: 4, title: "Progress Tracking" }
   ]
 
   setActive(tabId: any) {
     this.activeTabId = tabId;
+  }
+
+  public async getTrainerListAsync() {
+    const response: any = await this.trainerService.getTrainersAsync();
+    console.log(response, 'rsp');
+    this.trainersList = response;
+  }
+
+  public getAssignedTrainer() {
+    this.selectedTrainer = this.trainersList.find(t => t.id === this.selectedMember.trainerId);
+    console.log(this.selectedTrainer, 'gggg');
+
   }
 
   public async deleteMember(selectedMemberId: number) {
@@ -92,7 +112,7 @@ export class Members {
     } else {
       comp.isCreating = true;
     }
-    comp.emitData.subscribe((event: any) => {
+    comp.emitData.subscribe(async (event: any) => {
       if (event === 'close') {
         this.bsModalRef.close();
       }
@@ -101,12 +121,21 @@ export class Members {
         this.getMemberListAsync();
         this.bsModalRef.close();
       }
+
       if (event === 'record-updated') {
         this.toastrService.success('Member updated successfully!');
-        this.getMemberListAsync();
-        this.selectedMember = comp.memberForm.value
+
+        const updatedId = this.selectedMember.id;
+
+        await this.getMemberListAsync();
+        await this.getTrainerListAsync();
+
+        this.selectedMember = this.membersList.find(m => m.id === updatedId);
+        this.getAssignedTrainer();
+
         this.bsModalRef.close();
       }
+
     })
   }
 }

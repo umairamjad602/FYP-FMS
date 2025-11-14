@@ -7,5 +7,8 @@ import { Component } from '@angular/core';
   styleUrl: './dashboard.scss'
 })
 export class Dashboard {
-
+  public role: any;
+ngOnInit(){
+  this.role = localStorage.getItem('role');
+}
 }

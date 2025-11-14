@@ -1,0 +1,534 @@
+.diet-plans-container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 20px;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  }
+  
+  // Header Styles
+  .header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 30px;
+    padding-bottom: 20px;
+    border-bottom: 2px solid #e0e0e0;
+  
+    h2 {
+      color: #2c3e50;
+      margin: 0;
+      font-size: 28px;
+    }
+  }
+  
+  .role-info {
+    .role-badge {
+      background: #3498db;
+      color: white;
+      padding: 8px 16px;
+      border-radius: 20px;
+      font-weight: 600;
+      font-size: 14px;
+    }
+  }
+  
+  // Trainer Section Styles
+  .trainer-section {
+    background: #f8f9fa;
+    padding: 25px;
+    border-radius: 10px;
+    margin-bottom: 30px;
+    border-left: 4px solid #e74c3c;
+  }
+  
+  .form-card {
+    h3 {
+      color: #2c3e50;
+      margin-bottom: 20px;
+      font-size: 20px;
+    }
+  }
+  
+  .diet-form {
+    .form-row {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 20px;
+      margin-bottom: 20px;
+  
+      @media (max-width: 768px) {
+        grid-template-columns: 1fr;
+      }
+    }
+  
+    .macros-row {
+      display: grid;
+      grid-template-columns: 1fr 1fr 1fr;
+      gap: 15px;
+      margin-bottom: 20px;
+  
+      @media (max-width: 768px) {
+        grid-template-columns: 1fr;
+      }
+    }
+  
+    .form-group {
+      display: flex;
+      flex-direction: column;
+  
+      label {
+        font-weight: 600;
+        margin-bottom: 8px;
+        color: #2c3e50;
+        font-size: 14px;
+      }
+    }
+  
+    .form-input,
+    .form-textarea {
+      padding: 12px;
+      border: 2px solid #bdc3c7;
+      border-radius: 6px;
+      font-size: 14px;
+      transition: border-color 0.3s;
+  
+      &:focus {
+        outline: none;
+        border-color: #3498db;
+      }
+  
+      &.ng-invalid.ng-touched {
+        border-color: #e74c3c;
+      }
+    }
+  
+    .form-textarea {
+      resize: vertical;
+      min-height: 100px;
+    }
+  }
+  
+  .form-actions {
+    display: flex;
+    gap: 12px;
+    margin-top: 25px;
+  
+    .btn {
+      padding: 12px 24px;
+      border: none;
+      border-radius: 6px;
+      cursor: pointer;
+      font-weight: 600;
+      font-size: 14px;
+      transition: all 0.3s;
+  
+      &:disabled {
+        background: #bdc3c7;
+        cursor: not-allowed;
+      }
+    }
+  
+    .btn-primary {
+      background: #3498db;
+      color: white;
+  
+      &:hover:not(:disabled) {
+        background: #2980b9;
+      }
+    }
+  
+    .btn-secondary {
+      background: #95a5a6;
+      color: white;
+  
+      &:hover {
+        background: #7f8c8d;
+      }
+    }
+  }
+  
+  // Plans Section Styles
+  .plans-section {
+    h3 {
+      color: #2c3e50;
+      margin-bottom: 20px;
+      font-size: 24px;
+    }
+  }
+  
+  .no-plans {
+    text-align: center;
+    padding: 40px;
+    color: #7f8c8d;
+    font-style: italic;
+    background: #f8f9fa;
+    border-radius: 8px;
+  }
+  
+  .plans-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+    gap: 20px;
+  
+    @media (max-width: 768px) {
+      grid-template-columns: 1fr;
+    }
+  }
+  
+  .plan-card {
+    background: white;
+    border: 1px solid #e0e0e0;
+    border-radius: 10px;
+    padding: 20px;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+    transition: transform 0.3s, box-shadow 0.3s;
+  
+    &:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 4px 15px rgba(0,0,0,0.15);
+    }
+  }
+  
+  .plan-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: 15px;
+  
+    h4 {
+      margin: 0;
+      color: #2c3e50;
+      font-size: 18px;
+      flex: 1;
+    }
+  
+    .calories {
+      background: #27ae60;
+      color: white;
+      padding: 6px 12px;
+      border-radius: 20px;
+      font-size: 12px;
+      font-weight: 600;
+      white-space: nowrap;
+    }
+  }
+  
+  .plan-description {
+    color: #5d6d7e;
+    line-height: 1.5;
+    margin-bottom: 15px;
+  }
+  
+  .nutrition-info {
+    background: #f8f9fa;
+    padding: 15px;
+    border-radius: 6px;
+    margin-bottom: 15px;
+    display: flex;
+    justify-content: space-between;
+  
+    .nutrient {
+      text-align: center;
+      font-weight: 600;
+      color: #2c3e50;
+    }
+  }
+  
+  .plan-footer {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-top: 15px;
+    padding-top: 15px;
+    border-top: 1px solid #ecf0f1;
+  }
+  
+  .plan-meta {
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+  
+    small {
+      color: #7f8c8d;
+      font-size: 12px;
+    }
+  }
+  
+  .plan-actions {
+    display: flex;
+    gap: 8px;
+  
+    button {
+      padding: 8px 16px;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+      font-size: 12px;
+      font-weight: 600;
+      transition: background-color 0.3s;
+    }
+  
+    .btn-edit {
+      background: #f39c12;
+      color: white;
+  
+      &:hover {
+        background: #e67e22;
+      }
+    }
+  
+    .btn-assign {
+      background: #3498db;
+      color: white;
+  
+      &:hover {
+        background: #2980b9;
+      }
+    }
+  
+    .btn-delete {
+      background: #e74c3c;
+      color: white;
+  
+      &:hover {
+        background: #c0392b;
+      }
+    }
+  }
+  
+  .member-view {
+    .btn-view {
+      background: #9b59b6;
+      color: white;
+      border: none;
+      padding: 8px 16px;
+      border-radius: 4px;
+      cursor: pointer;
+      font-size: 12px;
+      font-weight: 600;
+  
+      &:hover {
+        background: #8e44ad;
+      }
+    }
+  }
+  
+  // Modal Styles - Updated to match workout styling
+  .modal-backdrop {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.5);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 1050;
+  }
+  
+  .modal-content {
+    background: white;
+    border-radius: 12px;
+    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3);
+    max-width: 500px;
+    width: 90%;
+    max-height: 80vh;
+    overflow-y: auto;
+    
+    .modal-header {
+      border-radius: 12px 12px 0 0;
+      border-bottom: 1px solid #dee2e6;
+      background: linear-gradient(135deg, #007bff 0%, #0056b3 100%);
+      color: white;
+      
+      h5 {
+        margin: 0;
+        font-weight: 600;
+      }
+      
+      .btn-close {
+        filter: invert(1);
+      }
+    }
+    
+    .modal-body {
+      padding: 1.5rem;
+      
+      h6 {
+        color: #2c3e50;
+        font-weight: 600;
+        margin-bottom: 0.5rem;
+      }
+      
+      .text-muted {
+        color: #6c757d !important;
+        margin-bottom: 1.5rem;
+      }
+    }
+    
+    .members-checklist {
+      max-height: 350px;
+      overflow-y: auto;
+      
+      .form-check {
+        padding: 0.75rem;
+        border-bottom: 1px solid #f8f9fa;
+        margin: 0;
+        
+        &:hover {
+          background: #f8f9fa;
+          border-radius: 6px;
+        }
+        
+        .form-check-input {
+          margin-right: 0.75rem;
+          
+          &:checked {
+            background-color: #007bff;
+            border-color: #007bff;
+          }
+          
+          &:focus {
+            border-color: #007bff;
+            box-shadow: 0 0 0 0.2rem rgba(0, 123, 255, 0.25);
+          }
+        }
+        
+        .form-check-label {
+          display: flex;
+          flex-direction: column;
+          
+          strong {
+            font-weight: 600;
+            color: #2c3e50;
+          }
+          
+          small {
+            color: #6c757d;
+            font-size: 0.875rem;
+          }
+        }
+      }
+    }
+    
+    .alert-warning {
+      background: #fff3cd;
+      border: 1px solid #ffeaa7;
+      color: #856404;
+      border-radius: 6px;
+    }
+  }
+  
+  .modal-footer {
+    background: #f8f9fa;
+    border-top: 1px solid #dee2e6;
+    border-radius: 0 0 12px 12px;
+    padding: 1rem 1.5rem;
+    
+    .btn {
+      border-radius: 6px;
+      font-weight: 600;
+      padding: 0.5rem 1.5rem;
+      
+      &.btn-danger {
+        background: #dc3545;
+        border-color: #dc3545;
+        
+        &:hover {
+          background: #c82333;
+          border-color: #c82333;
+        }
+      }
+      
+      &.btn-primary {
+        background: #007bff;
+        border-color: #007bff;
+        
+        &:hover {
+          background: #0056b3;
+          border-color: #0056b3;
+        }
+        
+        &:disabled {
+          background: #6c757d;
+          border-color: #6c757d;
+          cursor: not-allowed;
+        }
+      }
+    }
+  }
+  
+  // Responsive Design
+  @media (max-width: 768px) {
+    .diet-plans-container {
+      padding: 15px;
+    }
+  
+    .header {
+      flex-direction: column;
+      gap: 15px;
+      align-items: flex-start;
+    }
+  
+    .trainer-section {
+      padding: 20px;
+    }
+  
+    .plan-footer {
+      flex-direction: column;
+      gap: 15px;
+      align-items: flex-start;
+    }
+  
+    .plan-actions {
+      align-self: stretch;
+      justify-content: flex-end;
+    }
+  
+    .modal-content {
+      width: 95%;
+      margin: 1rem;
+      
+      .modal-body {
+        padding: 1rem;
+      }
+      
+      .modal-footer {
+        padding: 0.75rem 1rem;
+        
+        .btn {
+          width: 100%;
+          margin-bottom: 0.5rem;
+          
+          &:last-child {
+            margin-bottom: 0;
+          }
+        }
+      }
+    }
+  }
+  
+  // Badge Colors
+  .badge {
+    &.bg-success { background: linear-gradient(135deg, #28a745 0%, #20c997 100%) !important; }
+    &.bg-primary { background: linear-gradient(135deg, #007bff 0%, #0056b3 100%) !important; }
+    &.bg-warning { background: linear-gradient(135deg, #ffc107 0%, #fd7e14 100%) !important; }
+    &.bg-danger { background: linear-gradient(135deg, #dc3545 0%, #c82333 100%) !important; }
+  }
+  
+  // Animations
+  @keyframes fadeInUp {
+    from {
+      opacity: 0;
+      transform: translateY(20px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+  
+  .plan-card {
+    animation: fadeInUp 0.5s ease-out;
+  }

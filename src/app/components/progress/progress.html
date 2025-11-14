@@ -1,0 +1,91 @@
+<div class="container mt-4">
+    <div class="row">
+        <div class="col-12 mb-4">
+            <div class="card">
+                <div class="card-header bg-primary text-white">
+                    <h5 class="mb-0 p-2">Log Fitness Progress</h5>
+                </div>
+                <div class="card-body">
+                    <form [formGroup]="fitnessForm" (ngSubmit)="onSubmit()">
+
+                        <div class="mb-3">
+                            <label class="form-label">Date</label>
+                            <input type="date" class="form-control" formControlName="entryDate">
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label">Weight (kg)</label>
+                            <input type="number" class="form-control" placeholder="Optional" formControlName="weight">
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label">Workout Duration (min)</label>
+                            <input type="number" class="form-control" placeholder="Optional"
+                                formControlName="workoutDuration">
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label">Calories Burned</label>
+                            <input type="number" class="form-control" placeholder="Optional"
+                                formControlName="caloriesBurned">
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label">Exercise Type *</label>
+                            <select class="form-select" formControlName="exerciseType">
+                                <option value="">Select exercise type</option>
+                                <option *ngFor="let type of exerciseTypes" [value]="type">{{type}}</option>
+                            </select>
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label">Notes</label>
+                            <textarea class="form-control" rows="2" placeholder="Optional"
+                                formControlName="notes"></textarea>
+                        </div>
+
+                        <button type="submit" class="btn btn-success w-100" [disabled]="fitnessForm.invalid">
+                            Save Progress
+                        </button>
+
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <!-- History Section -->
+        <div class="col-12 mb-4">
+            <div class="card">
+                <div class="card-header bg-info text-white">
+                    <h5 class="mb-0 p-2 fw-bold">Fitness History</h5>
+                </div>
+                <div class="card-body p-0">
+                    <div class="table-responsive">
+                        <table class="table table-striped table-hover mb-0">
+                            <thead class="table-light">
+                                <tr>
+                                    <th>Date</th>
+                                    <th>Weight</th>
+                                    <th>Workout</th>
+                                    <th>Duration</th>
+                                    <th>Calories</th>
+                                    <th>Notes</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr *ngFor="let record of historyLists">
+                                    <td class="">{{ formatDate(record.entryDate) }}</td>
+                                    <td>{{ displayWeight(record.weight) }}</td>
+                                    <td>{{ record.exerciseType }}</td>
+                                    <td>{{ displayDuration(record.workoutDuration) }}</td>
+                                    <td>{{ record.caloriesBurned || '-' }}</td>
+                                    <td class="text-muted small">{{ record.notes || '-' }}</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

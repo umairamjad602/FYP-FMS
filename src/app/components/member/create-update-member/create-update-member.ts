@@ -3,6 +3,7 @@ import { Component, EventEmitter, Output } from '@angular/core';
 import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { ToastrService } from 'ngx-toastr';
 import { MemberService } from '../member-service';
+import { TrainerService } from '../../trainer/trainer-service';
 
 @Component({
   selector: 'app-create-update-member',
@@ -18,16 +19,18 @@ export class CreateUpdateMember {
   public selectedMember: any;
   public isCreating:boolean=false;
   public isUpdating:boolean=false;
-
+  public trainersList: any[] = [];
   constructor(
     private fb: FormBuilder,
     private toastrService: ToastrService,
-    private memberService: MemberService
+    private memberService: MemberService,
+    private trainerService: TrainerService
   ) {
     this.inItForm();
   }
 
   ngOnInit() {
+    this.getTrainerListAsync();
   }
 
   public setData(selectedMember?: any) {
@@ -47,8 +50,16 @@ export class CreateUpdateMember {
       phone: [''],
       address: [''],
       dateOfBirth: [null],
+      password: ['', [Validators.required]],
+      trainerId: ['']
     })
     this.ready = true;
+  }
+
+  public async getTrainerListAsync() {
+    const response: any = await this.trainerService.getTrainersAsync();
+    console.log(response, 'rsp');
+    this.trainersList = response;
   }
 
 

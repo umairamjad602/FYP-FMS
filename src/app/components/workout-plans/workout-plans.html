@@ -1,0 +1,398 @@
+<div class="workout-management-section">
+    <!-- Header with Role Badge -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="d-flex justify-content-between align-items-center">
+                <div>
+                    <h2 class="mb-1">
+                        {{ isTrainer() ? 'Workout Plan Management' : 'My Workout Plan' }}
+                    </h2>
+                    <p class="text-muted">
+                        {{ isTrainer() ? 'Create, manage, and assign workout plans to members' : 'View and track your
+                        assigned workout plan' }}
+                    </p>
+                </div>
+                <span class="badge role-badge" [ngClass]="{
+                    'bg-primary': isTrainer(),
+                    'bg-success': isMember(),
+                    'bg-warning': userRole === 'Admin'
+                }">
+                    <i class="bi" [class.bi-person-check]="isTrainer()" [class.bi-person]="isMember()"></i>
+                    {{ userRole }}
+                </span>
+            </div>
+        </div>
+    </div>
+
+    <!-- Trainer View -->
+    <div *ngIf="isTrainer()">
+        <div class="row">
+            <!-- Create Workout Plan Form -->
+            <div class="col-lg-6 mb-4">
+                <div class="workout-form-card card">
+                    <div class="card-header bg-success text-white">
+                        <h5 class="mb-0">
+                            <i class="bi bi-plus-circle me-2"></i>
+                            {{ isEditing ? 'Edit Workout Plan' : 'Create New Workout Plan' }}
+                        </h5>
+                    </div>
+                    <div class="card-body">
+                        <form [formGroup]="workoutForm">
+                            <!-- Basic Information -->
+                            <div class="mb-3">
+                                <label class="form-label">Workout Title *</label>
+                                <input type="text" class="form-control" formControlName="title"
+                                    placeholder="e.g., Beginner Full Body Workout">
+                            </div>
+
+                            <div class="mb-3">
+                                <label class="form-label">Description *</label>
+                                <textarea class="form-control" formControlName="description" rows="3"
+                                    placeholder="Describe the workout plan objectives and focus areas..."></textarea>
+                            </div>
+
+                            <div class="row mb-3">
+                                <div class="col-md-6">
+                                    <label class="form-label">Duration (minutes) *</label>
+                                    <input type="number" class="form-control" formControlName="duration" min="1"
+                                        max="120">
+                                </div>
+                                <div class="col-md-6">
+                                    <label class="form-label">Difficulty Level *</label>
+                                    <select class="form-select" formControlName="difficulty">
+                                        <option *ngFor="let diff of difficulties" [value]="diff">{{ diff }}</option>
+                                    </select>
+                                </div>
+                            </div>
+
+                            <!-- Exercises Section -->
+                            <div class="mb-4">
+                                <div class="d-flex justify-content-between align-items-center mb-3">
+                                    <label class="form-label mb-0">Exercises *</label>
+                                    <button type="button" class="btn btn-sm btn-outline-primary"
+                                        (click)="showExerciseForm = !showExerciseForm">
+                                        <i class="bi bi-plus"></i> Add Exercise
+                                    </button>
+                                </div>
+
+                                <!-- Exercise Form -->
+                                <div class="exercise-form card mb-3" *ngIf="showExerciseForm">
+                                    <div class="card-body">
+                                        <h6 class="card-title">Add New Exercise</h6>
+                                        <form [formGroup]="exerciseForm">
+                                            <div class="row">
+                                                <div class="col-12 mb-2">
+                                                    <input type="text" class="form-control" formControlName="name"
+                                                        placeholder="Exercise name">
+                                                </div>
+                                                <div class="col-md-4 mb-2">
+                                                    <input type="number" class="form-control" formControlName="sets"
+                                                        placeholder="Sets" min="1">
+                                                </div>
+                                                <div class="col-md-4 mb-2">
+                                                    <input type="number" class="form-control" formControlName="reps"
+                                                        placeholder="Reps" min="1">
+                                                </div>
+                                                <div class="col-md-4 mb-2">
+                                                    <input type="number" class="form-control" formControlName="restTime"
+                                                        placeholder="Rest (sec)" min="10">
+                                                </div>
+                                                <div class="col-12 mb-2">
+                                                    <textarea class="form-control" formControlName="instructions"
+                                                        placeholder="Instructions (optional)" rows="2"></textarea>
+                                                </div>
+                                            </div>
+                                            <div class="d-flex gap-2">
+                                                <button type="button" class="btn btn-success btn-sm"
+                                                    (click)="addExercise()" [disabled]="!exerciseForm.valid">
+                                                    Add Exercise
+                                                </button>
+                                                <button type="button" class="btn btn-secondary btn-sm"
+                                                    (click)="showExerciseForm = false">
+                                                    Cancel
+                                                </button>
+                                            </div>
+                                        </form>
+                                    </div>
+                                </div>
+
+                                <!-- Exercises List -->
+                                <div class="exercises-list" *ngIf="currentExercises.length > 0">
+                                    <div class="exercise-item card mb-2"
+                                        *ngFor="let exercise of currentExercises; let i = index">
+                                        <div class="card-body py-2">
+                                            <div class="d-flex justify-content-between align-items-center">
+                                                <div>
+                                                    <strong>{{ exercise.name }}</strong>
+                                                    <small class="text-muted ms-2">
+                                                        {{ exercise.sets }}x{{ exercise.reps }} • Rest: {{
+                                                        exercise.restTime }}s
+                                                    </small>
+                                                    <div *ngIf="exercise.instructions" class="exercise-instructions">
+                                                        <small>{{ exercise.instructions }}</small>
+                                                    </div>
+                                                </div>
+                                                <button type="button" class="btn btn-sm btn-outline-danger"
+                                                    (click)="removeExercise(i)">
+                                                    <i class="bi bi-trash"></i>
+                                                </button>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div *ngIf="currentExercises.length === 0" class="alert alert-warning py-2">
+                                    <small>No exercises added yet. Click "Add Exercise" to start building your
+                                        workout.</small>
+                                </div>
+                            </div>
+
+                            <!-- Form Actions -->
+                            <div class="form-actions">
+                                <button type="button" class="btn btn-success" (click)="submitWorkout()">
+                                    <i class="bi" [class.bi-check-circle]="!isEditing"
+                                        [class.bi-arrow-repeat]="isEditing"></i>
+                                    {{ isEditing ? 'Update Workout Plan' : 'Create Workout Plan' }}
+                                </button>
+                                <button type="button" class="btn btn-secondary ms-2" *ngIf="isEditing"
+                                    (click)="cancelEdit()">
+                                    <i class="bi bi-x-circle"></i> Cancel
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Workout Plans List & Member Assignment -->
+            <div class="col-lg-6">
+                <!-- Workout Plans List -->
+                <div class="workout-plans-card card mb-4">
+                    <div class="card-header bg-info text-white">
+                        <h5 class="mb-0">
+                            <i class="bi bi-list-check me-2"></i>
+                            My Workout Plans ({{ workoutPlans.length }})
+                        </h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="workout-plans-list">
+                            <div class="workout-plan-item card mb-3" *ngFor="let plan of workoutPlans">
+                                <div class="card-body">
+                                    <div class="d-flex justify-content-between align-items-start mb-2">
+                                        <h6 class="card-title mb-0">{{ plan.title }}</h6>
+                                        <span class="badge" [ngClass]="getDifficultyBadgeClass(plan.difficulty)">
+                                            {{ plan.difficulty }}
+                                        </span>
+                                    </div>
+                                    <p class="card-text text-muted small mb-2">{{ plan.description }}</p>
+
+                                    <div class="workout-details">
+                                        <small class="text-muted">
+                                            <i class="bi bi-clock me-1"></i>{{ plan.duration }} mins •
+                                            <i class="bi bi-list-ul me-1 ms-2"></i>{{ plan.exercises.length }} exercises
+                                            •
+                                            <i class="bi bi-people me-1 ms-2"></i>{{ plan.assignedTo.length }} members
+                                        </small>
+                                    </div>
+
+                                    <!-- Exercises Preview -->
+                                    <div class="exercises-preview mt-2">
+                                        <small class="text-muted">Exercises: </small>
+                                        <span *ngFor="let exercise of plan.exercises.slice(0, 3)"
+                                            class="badge bg-light text-dark me-1 mb-1">
+                                            {{ exercise.name }}
+                                        </span>
+                                        <span *ngIf="plan.exercises.length > 3" class="badge bg-secondary">
+                                            +{{ plan.exercises.length - 3 }} more
+                                        </span>
+                                    </div>
+
+                                    <!-- Action Buttons -->
+                                    <div class="workout-actions mt-3">
+                                        <button class="btn btn-sm btn-outline-primary me-2"
+                                            (click)="editWorkoutPlan(plan)">
+                                            <i class="bi bi-pencil"></i> Edit
+                                        </button>
+                                        <button class="btn btn-sm btn-outline-info me-2"
+                                            (click)="openAssignModal(plan)">
+                                            <i class="bi bi-person-plus"></i> Assign
+                                        </button>
+                                        <button class="btn btn-sm btn-outline-danger"
+                                            (click)="deleteWorkoutPlan(plan.id!)">
+                                            <i class="bi bi-trash"></i> Delete
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div *ngIf="workoutPlans.length === 0" class="text-center py-4">
+                                <i class="bi bi-list-check display-4 text-muted mb-3"></i>
+                                <h5 class="text-muted">No Workout Plans Yet</h5>
+                                <p class="text-muted">Create your first workout plan to get started!</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Assigned Members Section -->
+                <div class="assigned-members-card card">
+                    <div class="card-header bg-warning text-dark">
+                        <h5 class="mb-0">
+                            <i class="bi bi-people me-2"></i>
+                            Assigned Members ({{ assignedMembers.length }})
+                        </h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="assigned-members-list">
+                            <div class="assigned-member-item card mb-2" *ngFor="let member of assignedMembers">
+                                <div class="card-body py-2">
+                                    <div class="d-flex justify-content-between align-items-center">
+                                        <div>
+                                            <strong>{{ member.fullName }}</strong>
+                                            <small class="text-muted ms-2">{{ member.email }}</small>
+                                            <div class="assigned-workout">
+                                                <div class="dropdown">
+                                                    <button class="btn btn-sm btn-outline-primary dropdown-toggle"
+                                                        type="button" data-bs-toggle="dropdown"
+                                                        [disabled]="getAssignedWorkoutsForMember(member.id).length === 0">
+                                                        <i class="bi bi-list-task me-1"></i>
+                                                        {{ getAssignedWorkoutNames(member) }}
+                                                    </button>
+                                                    <ul class="dropdown-menu"
+                                                        *ngIf="getAssignedWorkoutsForMember(member.id).length > 0">
+                                                        <li
+                                                            *ngFor="let workout of getAssignedWorkoutsForMember(member.id)">
+                                                            <a class="dropdown-item" href="javascript:void(0)">
+                                                                <div>
+                                                                    <strong>{{ workout.title }}</strong>
+                                                                    <br>
+                                                                    <small class="text-muted">
+                                                                        {{ workout.difficulty }} • {{ workout.duration
+                                                                        }}min •
+                                                                        {{ workout.exercises.length || 0 }} exercises
+                                                                    </small>
+                                                                </div>
+                                                            </a>
+                                                        </li>
+                                                    </ul>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <button class="btn btn-sm btn-outline-danger"
+                                            (click)="unassignMember(member.id)">
+                                            <i class="bi bi-person-dash"></i> Unassign
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div *ngIf="assignedMembers.length === 0" class="text-center py-3">
+                                <i class="bi bi-people display-4 text-muted mb-2"></i>
+                                <p class="text-muted mb-0">No members assigned to workout plans yet.</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Member View -->
+    <!-- Member View -->
+    <div *ngIf="isMember()">
+        <div class="member-workout-section">
+            <h2>My Assigned Workout Plans</h2>
+
+            <div *ngIf="myAssignedWorkout.length === 0" class="no-workouts">
+                <p>No workout plans assigned yet. Please contact your trainer.</p>
+            </div>
+
+            <div *ngFor="let workout of myAssignedWorkout; let i = index" class="workout-card">
+                <div class="card-header">
+                    <h3>{{ workout.title }}</h3>
+                    <span class="badge" [ngClass]="getDifficultyBadgeClass(workout.difficulty)">
+                        {{ workout.difficulty }}
+                    </span>
+                </div>
+
+                <div class="card-body">
+                    <p><strong>Description:</strong> {{ workout.description }}</p>
+                    <p><strong>Duration:</strong> {{ workout.duration }} minutes</p>
+
+                    <div class="exercises-section">
+                        <h4>Exercises ({{ workout.exercises.length }})</h4>
+                        <div *ngFor="let exercise of workout.exercises; let exIndex = index" class="exercise-item">
+                            <div class="exercise-header">
+                                <h5>{{ exercise.name }}</h5>
+                                <button class="btn btn-success btn-sm" (click)="markExerciseCompleted(exIndex)">
+                                    Mark Complete
+                                </button>
+                            </div>
+                            <div class="exercise-details">
+                                <span>Sets: {{ exercise.sets }}</span>
+                                <span>Reps: {{ exercise.reps }}</span>
+                                <span>Rest: {{ exercise.restTime }}s</span>
+                            </div>
+                            <p *ngIf="exercise.instructions" class="instructions">
+                                {{ exercise.instructions }}
+                            </p>
+                        </div>
+                    </div>
+
+                    <button class="btn btn-primary start-workout-btn" (click)="startWorkout()">
+                        Start "{{ workout.title }}" Workout
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Assign Workout Modal (Trainer Only) -->
+    <div class="modal-backdrop" *ngIf="showAssignModal && isTrainer()">
+        <div class="modal-content">
+            <div class="modal-header bg-primary text-white p-3">
+                <h5 class="modal-title">
+                    <i class="bi bi-person-plus me-2"></i>
+                    Assign Workout Plan
+                </h5>
+                <button type="button" class="btn-close btn-close-white" (click)="closeAssignModal()"></button>
+            </div>
+            <div class="modal-body">
+                <div *ngIf="selectedWorkoutForAssign">
+                    <h6>{{ selectedWorkoutForAssign.title }}</h6>
+                    <p class="text-muted">{{ selectedWorkoutForAssign.description }}</p>
+
+                    <form [formGroup]="assignForm">
+                        <div class="mb-3">
+                            <label class="form-label fw-bold">Select Members to Assign</label>
+                            <!-- In the assign modal -->
+                            <div class="members-checklist">
+                                <div class="form-check" *ngFor="let member of trainerMembers">
+                                    <input class="form-check-input" type="checkbox" [id]="'member-' + member.id"
+                                        [value]="member.id" [checked]="isMemberAssigned(member.id)"
+                                        (change)="onMemberSelectionChange(member.id, $event)">
+                                    <label class="form-check-label" [for]="'member-' + member.id">
+                                        {{ member.fullName || member.name }}
+                                        <small class="text-muted">({{ member.email }})</small>
+                                    </label>
+                                </div>
+
+                                <div *ngIf="trainerMembers.length === 0" class="alert alert-warning mt-3">
+                                    <i class="bi bi-exclamation-triangle"></i>
+                                    No members assigned to you yet. Members need to be assigned to you first.
+                                </div>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </div>
+            <div class="modal-footer p-2 bg-light">
+                <button type="button" class="btn btn-danger me-2" (click)="closeAssignModal()">Cancel</button>
+                <button type="button" class="btn btn-primary me-2" (click)="assignWorkoutToMembers()"
+                    [disabled]="!assignForm.valid">
+                    <i class="bi bi-check-circle me-1"></i> Assign Workout
+                </button>
+            </div>
+        </div>
+    </div>
+</div>

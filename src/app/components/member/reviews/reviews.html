@@ -1,0 +1,157 @@
+<div class="reviews-section">
+
+    <!-- Heading -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <h2 class="mb-1">Reviews</h2>
+            <p class="text-muted">Manage your trainer reviews</p>
+        </div>
+    </div>
+
+    <!-- My Reviews Section -->
+    <div class="row mb-5" *ngIf="myReviews.length > 0">
+        <div class="col-12">
+            <h4 class="mb-3">My Reviews</h4>
+            <div class="reviews-list">
+                <div class="review-item card mb-3" *ngFor="let review of myReviews">
+                    <div class="card-body">
+                        <div class="d-flex justify-content-between align-items-start">
+                            <div class="flex-grow-1">
+                                <h5 class="card-title mb-2">{{ getTrainerName(review.trainerId) }}</h5>
+                                <div class="rating-stars mb-2">
+                                    <span *ngFor="let star of getStars(review.rating)" class="star filled">★</span>
+                                    <span *ngFor="let star of getEmptyStars(review.rating)" class="star">★</span>
+                                    <span class="rating-text ms-2">{{ review.rating }}/5</span>
+                                </div>
+                                <p class="card-text review-comment" *ngIf="review.comment">{{ review.comment }}</p>
+                                <p class="card-text text-muted" *ngIf="!review.comment"><em>No comment provided</em></p>
+                                <small class="text-muted">
+                                    Reviewed on {{ review.reviewDate | date:'medium' }}
+                                </small>
+                            </div>
+                            <div class="review-actions ms-3">
+                                <button class="btn btn-sm btn-outline-primary me-2" 
+                                        (click)="editReview(review)">
+                                    <i class="bi bi-pencil"></i> Edit
+                                </button>
+                                <button class="btn btn-sm btn-outline-danger" 
+                                        (click)="deleteReview(review.id)">
+                                    <i class="bi bi-trash"></i> Delete
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- No Reviews Message -->
+    <div class="row mb-4" *ngIf="myReviews.length === 0">
+        <div class="col-12">
+            <div class="alert alert-info">
+                <h5 class="alert-heading">No Reviews Yet</h5>
+                <p class="mb-0">You haven't reviewed any trainers yet. Select your trainer below to write your first review!</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Assigned Trainers -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <h4 class="mb-3">Your Assigned Trainer</h4>
+            <div *ngIf="!assignedTrainer" class="alert alert-warning">
+                You don't have any trainer assigned yet.
+            </div>
+            <div class="trainers-list" *ngIf="assignedTrainer">
+                <div class="trainer-item"
+                    [class.selected]="selectedTrainer?.id === assignedTrainer.id" 
+                    (click)="selectTrainer(assignedTrainer)">
+                    <div class="trainer-info">
+                        <h5 class="mb-1">{{ assignedTrainer?.fullName }}</h5>
+                        <p class="text-muted mb-0">{{ assignedTrainer?.specialization }}</p>
+                    </div>
+                    <div class="trainer-action">
+                        <span class="badge" 
+                              [class.bg-primary]="selectedTrainer?.id === assignedTrainer.id"
+                              [class.bg-secondary]="selectedTrainer?.id !== assignedTrainer.id">
+                            {{ selectedTrainer?.id === assignedTrainer.id ? 'Selected' : 'Click to Review' }}
+                        </span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Review Form -->
+    <div class="row" *ngIf="selectedTrainer">
+        <div class="col-12">
+            <div class="review-form card">
+                <div class="card-header bg-primary text-white">
+                    <h4 class="mb-0">
+                        <i class="bi bi-star-fill me-2"></i>
+                        {{ isEditing ? 'Edit Review' : 'Write Review' }} for {{ selectedTrainer.fullName }}
+                    </h4>
+                </div>
+                <div class="card-body">
+                    <form [formGroup]="memberForm">
+                        <!-- Rating -->
+                        <div class="mb-4">
+                            <label class="form-label fw-bold">Rating *</label>
+                            <div class="rating-stars mb-2">
+                                <span *ngFor="let star of [1,2,3,4,5]" 
+                                      class="star" 
+                                      [class.filled]="star <= currentRating"
+                                      (click)="setRating(star)"
+                                      title="{{ star }} star">
+                                    ★
+                                </span>
+                            </div>
+                            <div class="rating-text fw-medium">
+                                {{ currentRating > 0 ? currentRating + ' star' + (currentRating > 1 ? 's' : '') + ' selected' : 'Click stars to rate' }}
+                            </div>
+                            <div class="error-message" *ngIf="memberForm.get('rating')?.invalid && memberForm.get('rating')?.touched">
+                                Please select a rating between 1-5 stars
+                            </div>
+                        </div>
+
+                        <!-- Comment -->
+                        <div class="mb-4">
+                            <label for="comment" class="form-label fw-bold">Your Review</label>
+                            <textarea class="form-control" 
+                                      id="comment" 
+                                      rows="4" 
+                                      placeholder="Share your experience with this trainer. What did you like? Any suggestions for improvement?"
+                                      formControlName="comment"></textarea>
+                            <div class="form-text">
+                                Your feedback helps improve our services. Be honest and constructive.
+                            </div>
+                        </div>
+
+                        <!-- Hidden fields -->
+                        <input type="hidden" formControlName="trainerId">
+                        <input type="hidden" formControlName="memberId">
+
+                        <!-- Form Actions -->
+                        <div class="form-actions d-flex gap-2">
+                            <button type="button" 
+                                    class="btn btn-primary btn-lg" 
+                                    (click)="submitReview()" 
+                                    [disabled]="memberForm.invalid || currentRating === 0">
+                                <i class="bi" [class.bi-check-circle]="!isEditing" [class.bi-arrow-repeat]="isEditing"></i>
+                                {{ isEditing ? 'Update Review' : 'Submit Review' }}
+                            </button>
+                            <button type="button" 
+                                    class="btn btn-outline-secondary btn-lg" 
+                                    *ngIf="isEditing"
+                                    (click)="cancelEdit()">
+                                <i class="bi bi-x-circle"></i> Cancel
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+</div>

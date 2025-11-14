@@ -6,6 +6,7 @@ import { CreateUpdateTrainer } from '../create-update-trainer';
 import { ToastrService } from 'ngx-toastr';
 import { FormsModule } from '@angular/forms';
 import { TrainerService } from '../../trainer-service';
+import { MemberService } from '../../../member/member-service';
 
 @Component({
   selector: 'app-trainers',
@@ -19,20 +20,28 @@ export class Trainers {
   public bsModalRef: NgbModalRef;
   public trainersList: any[] = [];
   public searchText: string = '';
+  public assignedMembers: any[] = [];
+  public membersList: any[] = [];
 
   constructor(
     private route: ActivatedRoute,
     private ngbModalService: NgbModal,
     private toastrService: ToastrService,
     private router: Router,
-    private trainerService: TrainerService
+    private trainerService: TrainerService,
+    private memberService: MemberService
   ) { }
 
   async ngOnInit() {
     await this.getTrainerListAsync();
+    await this.getMemberListAsync(); // load members
+    
     this.getSelectedTrainerFromParams();
+    this.getAssignedMembers(); // filter members
+    
     this.setActive(1);
   }
+  
 
   public applySearch() {
     if (!this.searchText) {
@@ -46,18 +55,35 @@ export class Trainers {
   }
 
   public getSelectedTrainerFromParams() {
-    this.route.params.subscribe(params => {
+    this.route.params.subscribe(async params => {
       const trainerId = params['id'];
       this.selectedTrainer = this.trainersList.find(t => t.id === +trainerId);
-      console.log(trainerId, 'sel', this.selectedTrainer);
+  
+      await this.getMemberListAsync();
+      this.getAssignedMembers();
     });
   }
+  
 
   public async getTrainerListAsync() {
     const response: any = await this.trainerService.getTrainersAsync();
     console.log(response, 'rsp');
     this.trainersList = response;
   }
+
+  public async getMemberListAsync() {
+    const response: any = await this.memberService.getMembersAsync();
+    // console.log(response, 'rsp');
+    this.membersList = response;
+  }
+
+  public async getAssignedMembers() {
+    const trainerId = this.selectedTrainer.id;
+  
+    this.assignedMembers = this.membersList.filter(m => m.trainerId === trainerId);
+    console.log("Assigned Members:", this.assignedMembers);
+  }
+  
 
   public tabs = [
     { id: 1, title: "Trainer Details" },

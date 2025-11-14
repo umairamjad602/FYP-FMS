@@ -12,6 +12,12 @@ import { Attendance } from './components/attendance/attendance';
 import { Reports } from './components/reports/reports';
 import { Notifications } from './components/notifications/notifications';
 import { Settings } from './components/settings/settings';
+import { Reviews } from './components/member/reviews/reviews';
+import { Profile } from './components/profile/profile';
+import { WorkoutPlans } from './components/workout-plans/workout-plans';
+import { DietPlans } from './components/diet-plans/diet-plans';
+import { Progress } from './components/progress/progress';
+import { Appointments } from './components/appointments/appointments';
 
 export const routes: Routes = [
   {
@@ -75,6 +81,30 @@ export const routes: Routes = [
         path: 'settings',
         component: Settings
       },
+      {
+        path: 'reviews',
+        component: Reviews
+      },
+      {
+        path: 'profile',
+        component: Profile
+      },
+      {
+        path: 'workout-plans',
+        component: WorkoutPlans
+      },
+      {
+        path: 'diet-plans',
+        component: DietPlans
+      },
+      {
+        path: 'progress',
+        component: Progress
+      },
+      {
+        path: 'appointments',
+        component: Appointments
+      }
     ]
   },
   { 

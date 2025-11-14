@@ -1,0 +1,373 @@
+<div class="container-fluid py-4">
+    <!-- Header -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <h1 class="h2 mb-0">Appointments & Classes</h1>
+            <p class="text-muted">Manage your fitness appointments and classes</p>
+        </div>
+    </div>
+
+    <!-- Messages -->
+    <div class="row mb-3" *ngIf="successMessage || errorMessage">
+        <div class="col-12">
+            <div *ngIf="successMessage" class="alert alert-success alert-dismissible fade show" role="alert">
+                <i class="bi bi-check-circle-fill me-2"></i>
+                {{ successMessage }}
+                <button type="button" class="btn-close" (click)="clearMessages()"></button>
+            </div>
+            <div *ngIf="errorMessage" class="alert alert-danger alert-dismissible fade show" role="alert">
+                <i class="bi bi-exclamation-triangle-fill me-2"></i>
+                {{ errorMessage }}
+                <button type="button" class="btn-close" (click)="clearMessages()"></button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Navigation Tabs -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <ul class="nav nav-tabs">
+                <li class="nav-item">
+                    <button class="nav-link" [class.active]="activeTab === 'book-trainer'"
+                        (click)="setActiveTab('book-trainer')">
+                        Book Trainer
+                    </button>
+                </li>
+                <li class="nav-item">
+                    <button class="nav-link" [class.active]="activeTab === 'book-class'"
+                        (click)="setActiveTab('book-class')">
+                        Book Class
+                    </button>
+                </li>
+                <li class="nav-item" *ngIf="userData?.role == 'Trainer'">
+                    <button class="nav-link" [class.active]="activeTab === 'create-class'"
+                        (click)="setActiveTab('create-class')">
+                        Create Class
+                    </button>
+                </li>
+                <li class="nav-item">
+                    <button class="nav-link" [class.active]="activeTab === 'my-appointments'"
+                        (click)="setActiveTab('my-appointments')">
+                        My Appointments
+                    </button>
+                </li>
+            </ul>
+        </div>
+    </div>
+
+    <!-- Loading Spinner -->
+    <div class="row" *ngIf="isLoading">
+        <div class="col-12 text-center">
+            <div class="spinner-border text-primary" role="status">
+                <span class="visually-hidden">Loading...</span>
+            </div>
+            <p class="mt-2 text-muted">Processing your request...</p>
+        </div>
+    </div>
+
+    <!-- Book Trainer Tab -->
+    <div class="row" *ngIf="activeTab === 'book-trainer' && !isLoading">
+        <div class="col-md-8">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">Book Personal Trainer</h5>
+                </div>
+                <div class="card-body">
+                    <form [formGroup]="bookTrainerForm" (ngSubmit)="onBookTrainer()">
+                        <div class="row g-3">
+
+                            <div class="col-md-6">
+                                <label for="appointmentDate" class="form-label">Appointment Date *</label>
+                                <input type="date" class="form-control" id="appointmentDate"
+                                    formControlName="appointmentDate">
+                                <div class="invalid-feedback"
+                                    *ngIf="isFieldInvalid(bookTrainerForm, 'appointmentDate')">
+                                    Date is required
+                                </div>
+                            </div>
+
+                            <div class="col-md-6">
+                                <label for="appointmentTime" class="form-label">Appointment Time *</label>
+                                <input type="time" class="form-control" id="appointmentTime"
+                                    formControlName="appointmentTime">
+                                <div class="invalid-feedback"
+                                    *ngIf="isFieldInvalid(bookTrainerForm, 'appointmentTime')">
+                                    Time is required
+                                </div>
+                            </div>
+
+                            <div class="col-md-6">
+                                <label for="duration" class="form-label">Duration (minutes) *</label>
+                                <input type="number" class="form-control" id="duration" formControlName="duration"
+                                    min="30">
+                                <div class="invalid-feedback" *ngIf="isFieldInvalid(bookTrainerForm, 'duration')">
+                                    Minimum duration is 30 minutes
+                                </div>
+                            </div>
+
+                            <!-- In the Create Class Tab -->
+                            <div class="col-md-6">
+                                <label for="classTrainerId" class="form-label">Trainer *</label>
+                                <select class="form-select" id="classTrainerId" formControlName="trainerId"
+                                    [class.is-invalid]="isFieldInvalid(createClassForm, 'trainerId')">
+                                    <option value="">Select trainer...</option>
+                                    <!-- Live trainers from service -->
+                                    <option *ngFor="let trainer of allTrainers" [value]="trainer.id">
+                                        {{ trainer.fullName }} - {{ trainer.specialization }}
+                                    </option>
+                                </select>
+                                <div class="invalid-feedback" *ngIf="isFieldInvalid(createClassForm, 'trainerId')">
+                                    Please select a trainer
+                                </div>
+                            </div>
+
+                            <div class="col-12">
+                                <button type="submit" class="btn btn-primary"
+                                    [disabled]="bookTrainerForm.invalid || isLoading">
+                                    Book Trainer
+                                </button>
+                                <button type="button" class="btn btn-outline-secondary ms-2"
+                                    (click)="loadAvailableTrainers()">
+                                    Refresh Available Trainers
+                                </button>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-4">
+            <div class="card">
+                <div class="card-header">
+                    <h6 class="card-title mb-0">Available Trainers</h6>
+                </div>
+                <div class="card-body">
+                    <div *ngIf="availableTrainers.length === 0" class="text-muted">
+                        No trainers available for selected date/time
+                    </div>
+                    <div *ngFor="let trainer of availableTrainers" class="mb-2 p-2 border rounded">
+                        <strong>{{ trainer.fullName }}</strong><br>
+                        <small class="text-muted">{{ trainer.email }}</small>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <!-- Book Class Tab -->
+    <div class="row" *ngIf="activeTab === 'book-class' && !isLoading">
+        <div class="col-md-8">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">Book Fitness Class</h5>
+                </div>
+                <div class="card-body">
+                    <form [formGroup]="bookClassForm" (ngSubmit)="onBookClass()">
+                        <div class="row g-3">
+
+                            <!-- Class Selection -->
+                            <div class="col-12">
+                                <label for="classId" class="form-label">Select Class *</label>
+                                <select class="form-select" id="classId" formControlName="classId"
+                                    (change)="onClassSelected($event)"
+                                    [class.is-invalid]="isFieldInvalid(bookClassForm, 'classId')">
+                                    <option value="">Choose a class...</option>
+                                    <option *ngFor="let class of upcomingClasses" [value]="class.id"
+                                        [disabled]="class.currentBookings >= class.maxCapacity">
+                                        {{ class.className }} - {{ class.trainer?.fullName }}
+                                        ({{ class.scheduleDate | date:'mediumDate' }} at {{ class.scheduleTime }})
+                                        - {{ class.currentBookings }}/{{ class.maxCapacity }} spots
+                                    </option>
+                                </select>
+                                <div class="invalid-feedback" *ngIf="isFieldInvalid(bookClassForm, 'classId')">
+                                    Please select a class
+                                </div>
+                            </div>
+
+                            <!-- Selected Class Details -->
+                            <div class="col-12" *ngIf="selectedClass">
+                                <div class="card bg-light">
+                                    <div class="card-body">
+                                        <h6>Class Details:</h6>
+                                        <p class="mb-1"><strong>Class:</strong> {{ selectedClass.className }}</p>
+                                        <p class="mb-1"><strong>Trainer:</strong> {{ selectedClass.trainer?.fullName }}
+                                        </p>
+                                        <p class="mb-1"><strong>Date:</strong> {{ selectedClass.scheduleDate |
+                                            date:'fullDate' }}</p>
+                                        <p class="mb-1"><strong>Time:</strong> {{ selectedClass.scheduleTime }}</p>
+                                        <p class="mb-1"><strong>Duration:</strong> {{ selectedClass.duration }} minutes
+                                        </p>
+                                        <p class="mb-0"><strong>Available Spots:</strong> {{ selectedClass.maxCapacity -
+                                            selectedClass.currentBookings }} / {{ selectedClass.maxCapacity }}</p>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="col-12">
+                                <button type="submit" class="btn btn-primary"
+                                    [disabled]="bookClassForm.invalid || isLoading">
+                                    Book Class
+                                </button>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Create Class Tab -->
+    <div class="row" *ngIf="activeTab === 'create-class' && !isLoading && userData?.role == 'Trainer'">
+        <div class="col-md-8">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">Create New Fitness Class</h5>
+                </div>
+                <div class="card-body">
+                    <form [formGroup]="createClassForm" (ngSubmit)="onCreateClass()">
+                        <div class="row g-3">
+                            <div class="col-12">
+                                <label for="className" class="form-label">Class Name *</label>
+                                <input type="text" class="form-control" id="className" formControlName="className"
+                                    placeholder="e.g., Yoga Basics, Advanced Cardio"
+                                    [class.is-invalid]="isFieldInvalid(createClassForm, 'className')">
+                                <div class="invalid-feedback" *ngIf="isFieldInvalid(createClassForm, 'className')">
+                                    Class name is required
+                                </div>
+                            </div>
+
+                            <div class="col-md-6">
+                                <label for="classTrainerId" class="form-label">Trainer *</label>
+                                <select class="form-select" id="classTrainerId" formControlName="trainerId"
+                                    [class.is-invalid]="isFieldInvalid(createClassForm, 'trainerId')">
+                                    <option value="">Select trainer...</option>
+                                    <!-- Trainers would be loaded from another service -->
+                                    <option *ngFor="let trainer of allTrainers" [value]="trainer.id">
+                                        {{trainer.fullName}}</option>
+
+                                </select>
+                                <div class="invalid-feedback" *ngIf="isFieldInvalid(createClassForm, 'trainerId')">
+                                    Please select a trainer
+                                </div>
+                            </div>
+
+                            <div class="col-md-6">
+                                <label for="scheduleDate" class="form-label">Schedule Date *</label>
+                                <input type="date" class="form-control" id="scheduleDate"
+                                    formControlName="scheduleDate">
+                                <div class="invalid-feedback" *ngIf="isFieldInvalid(createClassForm, 'scheduleDate')">
+                                    Date is required
+                                </div>
+                            </div>
+
+                            <div class="col-md-6">
+                                <label for="scheduleTime" class="form-label">Schedule Time *</label>
+                                <input type="time" class="form-control" id="scheduleTime"
+                                    formControlName="scheduleTime">
+                                <div class="invalid-feedback" *ngIf="isFieldInvalid(createClassForm, 'scheduleTime')">
+                                    Time is required
+                                </div>
+                            </div>
+
+                            <div class="col-md-6">
+                                <label for="classDuration" class="form-label">Duration (minutes) *</label>
+                                <input type="number" class="form-control" id="classDuration" formControlName="duration"
+                                    min="30">
+                                <div class="invalid-feedback" *ngIf="isFieldInvalid(createClassForm, 'duration')">
+                                    Minimum duration is 30 minutes
+                                </div>
+                            </div>
+
+                            <div class="col-md-6">
+                                <label for="maxCapacity" class="form-label">Maximum Capacity *</label>
+                                <input type="number" class="form-control" id="maxCapacity" formControlName="maxCapacity"
+                                    min="1">
+                                <div class="invalid-feedback" *ngIf="isFieldInvalid(createClassForm, 'maxCapacity')">
+                                    Capacity must be at least 1
+                                </div>
+                            </div>
+
+                            <div class="col-12">
+                                <button type="submit" class="btn btn-success"
+                                    [disabled]="createClassForm.invalid || isLoading">
+                                    Create Class
+                                </button>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- My Appointments Tab -->
+    <div class="row" *ngIf="activeTab === 'my-appointments' && !isLoading">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <h5 class="card-title mb-0">My Appointments</h5>
+                    <button type="button" class="btn btn-outline-primary btn-sm" (click)="loadMemberAppointments()">
+                        Refresh
+                    </button>
+                </div>
+                <div class="card-body">
+                    <div *ngIf="memberAppointments.length === 0" class="text-center py-4">
+                        <p class="text-muted">No appointments found</p>
+                        <p>Enter your Member ID and switch to this tab to see your appointments</p>
+                    </div>
+
+                    <div class="table-responsive" *ngIf="memberAppointments.length > 0">
+                        <table class="table table-striped">
+                            <thead>
+                                <tr>
+                                    <th>Type</th>
+                                    <th>Details</th>
+                                    <th>Date & Time</th>
+                                    <th>Duration</th>
+                                    <th>Status</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr *ngFor="let appointment of memberAppointments">
+                                    <td>
+                                        <span *ngIf="appointment.trainerId" class="badge bg-info">Trainer</span>
+                                        <span *ngIf="appointment.classId" class="badge bg-success">Class</span>
+                                    </td>
+                                    <td>
+                                        <div *ngIf="appointment.trainer">
+                                            <strong>{{ appointment.trainer.name }}</strong><br>
+                                            <small class="text-muted">{{ appointment.trainer.specialization }}</small>
+                                        </div>
+                                        <div *ngIf="appointment.fitnessClass">
+                                            <strong>{{ appointment.fitnessClass.className }}</strong><br>
+                                            <small class="text-muted">with {{ appointment.fitnessClass.trainer?.name
+                                                }}</small>
+                                        </div>
+                                    </td>
+                                    <td>
+                                        {{ appointment.appointmentDate }}<br>
+                                        <small class="text-muted">{{ appointment.appointmentTime }}</small>
+                                    </td>
+                                    <td>{{ appointment.duration }} mins</td>
+                                    <td>
+                                        <span [class]="getStatusBadgeClass(appointment.status)">
+                                            {{ appointment.status }}
+                                        </span>
+                                    </td>
+                                    <td>
+                                        <button *ngIf="appointment.status === 'Scheduled'" type="button"
+                                            class="btn btn-outline-danger btn-sm"
+                                            (click)="onCancelAppointment(appointment.id)">
+                                            Cancel
+                                        </button>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

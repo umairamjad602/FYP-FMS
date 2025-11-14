@@ -46,6 +46,7 @@ export class CreateUpdateTrainer {
       phone: [''],
       address: [''],
       dateOfBirth: ['', null],
+      password: ['', [Validators.required]]
     });
     this.ready = true;
   }

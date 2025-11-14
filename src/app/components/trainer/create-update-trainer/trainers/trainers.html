@@ -1,87 +1,104 @@
 <div class="row m-0">
-  <div class="col-4 wrap-listing p-0">
-      <div class="listing-header">
-          <div class="d-flex justify-content-between align-items-center p-2">
-              <h5>Trainers</h5>
-              <a href="javascript:;"><i class="bg-primary fa fa-plus text-white rounded-circle fs-4 p-1" (click)="createUpdateTrainerModal()"></i></a>
-          </div>
-          <div class="my-2 px-2">
-              <input type="search" [(ngModel)]="searchText" (keyup.enter)="applySearch()" class="form-control form-control-sm rounded-pill ps-2 p-1" placeholder="Search">
-          </div>
-      </div>
-      <div class="listing-main px-2">
-          <ul class="p-0 m-0">
-              <li class="listing-items" *ngFor="let trainer of trainersList" [routerLink]="['/trainers', trainer.id]"
-                  routerLinkActive="listing-active" [routerLinkActiveOptions]="{ exact: true }">
-                  {{ trainer?.fullName }}
-              </li>
-          </ul>
-      </div>
-      <div class="listing-footer text-center border-top border-0">
-          <a href="javascript:;" class="text-decoration-none text-primary">Load More</a>
-      </div>
-  </div>
+    <div class="col-4 wrap-listing p-0">
+        <div class="listing-header">
+            <div class="d-flex justify-content-between align-items-center p-2">
+                <h5>Trainers</h5>
+                <a href="javascript:;"><i class="bg-primary fa fa-plus text-white rounded-circle fs-4 p-1"
+                        (click)="createUpdateTrainerModal()"></i></a>
+            </div>
+            <div class="my-2 px-2">
+                <input type="search" [(ngModel)]="searchText" (keyup.enter)="applySearch()"
+                    class="form-control form-control-sm rounded-pill ps-2 p-1" placeholder="Search">
+            </div>
+        </div>
+        <div class="listing-main px-2">
+            <ul class="p-0 m-0">
+                <li class="listing-items" *ngFor="let trainer of trainersList" [routerLink]="['/trainers', trainer.id]"
+                    routerLinkActive="listing-active" [routerLinkActiveOptions]="{ exact: true }">
+                    {{ trainer?.fullName }}
+                </li>
+            </ul>
+        </div>
+        <div class="listing-footer text-center border-top border-0">
+            <a href="javascript:;" class="text-decoration-none text-primary">Load More</a>
+        </div>
+    </div>
 
-  <h5 *ngIf="!selectedTrainer" class="col-8 p-0 d-flex justify-content-center align-items-center text-secondary">
-      Select trainer to view details
-  </h5>
+    <h5 *ngIf="!selectedTrainer" class="col-8 p-0 d-flex justify-content-center align-items-center text-secondary">
+        Select trainer to view details
+    </h5>
 
-  <div *ngIf="selectedTrainer" class="col-8 p-0">
-      <div class="single-view">
-          <div class="single-view-header">
-              <div class="d-flex justify-content-between p-2">
-                  <div class="d-flex gap-3">
-                      <img src="assets/images/person.svg" class="border p-1 shadow" height="130" alt="">
-                      <h5 class="py-2">{{selectedTrainer?.fullName}}</h5>
-                  </div>
-                  <div>
-                      <div class="dropdown">
-                          <a href="#" class="d-flex align-items-center link-dark btn btn-sm btn-light btn-active-light-primary text-decoration-none dropdown-toggle"
-                              data-bs-toggle="dropdown" aria-expanded="false">
-                              <span>More</span>
-                          </a>
-                          <ul class="dropdown-menu text-small shadow">
-                              <li>
-                                  <a class="dropdown-item" href="javascript:;" (click)="createUpdateTrainerModal(this.selectedTrainer)">
-                                      <i class="fa fa-edit me-2 text-secondary"></i>Update
-                                  </a>
-                              </li>
-                              <li>
-                                  <a (click)="deleteTrainer(selectedTrainer?.id)" class="dropdown-item" href="javascript:;">
-                                      <i class="fa fa-trash me-2 text-secondary"></i>Delete
-                                  </a>
-                              </li>
-                          </ul>
-                      </div>
-                  </div>
-              </div>
+    <div *ngIf="selectedTrainer" class="col-8 p-0">
+        <div class="single-view">
+            <div class="single-view-header">
+                <div class="d-flex justify-content-between p-2">
+                    <div class="d-flex gap-3">
+                        <img src="assets/images/person.svg" class="border p-1 shadow" height="130" alt="">
+                        <h5 class="py-2">{{selectedTrainer?.fullName}}</h5>
+                    </div>
+                    <div>
+                        <div class="dropdown">
+                            <a href="#"
+                                class="d-flex align-items-center link-dark btn btn-sm btn-light btn-active-light-primary text-decoration-none dropdown-toggle"
+                                data-bs-toggle="dropdown" aria-expanded="false">
+                                <span>More</span>
+                            </a>
+                            <ul class="dropdown-menu text-small shadow">
+                                <li>
+                                    <a class="dropdown-item" href="javascript:;"
+                                        (click)="createUpdateTrainerModal(this.selectedTrainer)">
+                                        <i class="fa fa-edit me-2 text-secondary"></i>Update
+                                    </a>
+                                </li>
+                                <li>
+                                    <a (click)="deleteTrainer(selectedTrainer?.id)" class="dropdown-item"
+                                        href="javascript:;">
+                                        <i class="fa fa-trash me-2 text-secondary"></i>Delete
+                                    </a>
+                                </li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
 
-              <div class="d-flex gap-4 tabs mt-5">
-                  <div *ngFor="let tab of tabs" (click)="setActive(tab.id)"
-                      [ngClass]="{'active-tab': activeTabId == tab.id}" class="tab-item">{{tab.title}}</div>
-              </div>
-          </div>
+                <div class="d-flex gap-4 tabs mt-5">
+                    <div *ngFor="let tab of tabs" (click)="setActive(tab.id)"
+                        [ngClass]="{'active-tab': activeTabId == tab.id}" class="tab-item">{{tab.title}}</div>
+                </div>
+            </div>
 
-          <div class="single-view-main mb-2" *ngIf="activeTabId==1">
-              <p class="mb-2"><span class="label">Name :</span> {{selectedTrainer?.fullName ?? '--'}}</p>
-              <p class="mb-2"><span class="label">Email :</span> {{selectedTrainer?.email ?? '--'}}</p>
-              <p class="mb-2"><span class="label">Username :</span> {{selectedTrainer?.userName ?? '--'}}</p>
-              <p class="mb-2"><span class="label">Phone :</span> {{selectedTrainer?.phone ?? '--'}}</p>
-              <p class="mb-2"><span class="label">DOB :</span> {{ (selectedTrainer?.dateOfBirth | date) ?? '--'}}</p>
-              <p class="mb-2"><span class="label">Address :</span> {{selectedTrainer?.address ?? '--'}}</p>
-          </div>
+            <div class="single-view-main mb-2" *ngIf="activeTabId==1">
+                <p class="mb-2"><span class="label">Name :</span> {{selectedTrainer?.fullName ?? '--'}}</p>
+                <p class="mb-2"><span class="label">Email :</span> {{selectedTrainer?.email ?? '--'}}</p>
+                <p class="mb-2"><span class="label">Username :</span> {{selectedTrainer?.userName ?? '--'}}</p>
+                <p class="mb-2"><span class="label">Phone :</span> {{selectedTrainer?.phone ?? '--'}}</p>
+                <p class="mb-2"><span class="label">DOB :</span> {{ (selectedTrainer?.dateOfBirth | date) ?? '--'}}</p>
+                <p class="mb-2"><span class="label">Address :</span> {{selectedTrainer?.address ?? '--'}}</p>
+            </div>
 
-          <div class="single-view-main mb-2" *ngIf="activeTabId==2">
-              Assigned Members details and related data will go here.
-          </div>
+            <div class="single-view-main mb-2" *ngIf="activeTabId==2">
+                <div *ngIf="assignedMembers.length > 0; else noMembers">
+                    <ul class="list-group">
+                        <li *ngFor="let member of assignedMembers" class="list-group-item">
+                            {{ member.fullName }}
+                        </li>
+                    </ul>
+                </div>
 
-          <div class="single-view-main mb-2" *ngIf="activeTabId==3">
-              Trainer’s schedule and sessions data will go here.
-          </div>
+                <ng-template #noMembers>
+                    <p>No members assigned yet.</p>
+                </ng-template>
 
-          <div class="single-view-main mb-2" *ngIf="activeTabId==4">
-              Performance metrics and progress details will go here.
-          </div>
-      </div>
-  </div>
+
+            </div>
+
+            <div class="single-view-main mb-2" *ngIf="activeTabId==3">
+                Trainer’s schedule and sessions data will go here.
+            </div>
+
+            <div class="single-view-main mb-2" *ngIf="activeTabId==4">
+                Performance metrics and progress details will go here.
+            </div>
+        </div>
+    </div>
 </div>
