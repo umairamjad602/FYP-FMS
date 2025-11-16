@@ -24,14 +24,15 @@ export class Appointments implements OnInit {
   allFitnessClasses: any = [];
   allTrainers: any = [];
   public userData: any = [];
-  selectedClass: any = null; // Add this property
+  selectedClass: any = null;
 
   // UI states
-  activeTab: string = 'book-trainer';
+  public activeTab: string = 'book-trainer';
   isLoading: boolean = false;
   successMessage: string = '';
   errorMessage: string = '';
   public userId: number;
+  public userRole: string;
 
   constructor(
     private fb: FormBuilder,
@@ -46,32 +47,49 @@ export class Appointments implements OnInit {
 
   async ngOnInit() {
     await this.getProfile();
-    this.updateBookTrainerFormWithUserId();
+    this.setInitialTab();
+    this.updateFormsWithUserId();
     this.loadInitialData();
     this.setupFormListeners();
   }
 
-  private updateBookTrainerFormWithUserId() {
-    if (this.userId) {
-      this.bookTrainerForm.patchValue({ memberId: this.userId });
-      console.log('Book Trainer form updated with user ID:', this.userId);
+  private setInitialTab() {
+    if (this.userRole === 'Trainer') {
+      this.activeTab = 'create-class';
+    } else if (this.userRole === 'Member') {
+      this.activeTab = 'book-trainer';
+    }
+    console.log('User role:', this.userRole, 'Active tab:', this.activeTab);
+  }
+
+  private updateFormsWithUserId() {
+    if (this.userId && this.userRole) {
+      if (this.userRole === 'Member') {
+        this.bookTrainerForm.patchValue({ memberId: this.userId });
+        this.bookClassForm.patchValue({ memberId: this.userId });
+      }
+      if (this.userRole === 'Trainer') {
+        this.createClassForm.patchValue({ trainerId: this.userId });
+      }
     }
   }
 
-  public async getProfile(){
-    const response = await this.authService.getloggedInUserAsync();
-    console.log(response, 'rip');
-    this.userData = response;
-    this.userId = this.userData.id;
-    console.log(this.userId, 'rip id');
+  public async getProfile() {
+    try {
+      const response = await this.authService.getloggedInUserAsync();
+      this.userData = response;
+      this.userId = this.userData.id;
+      this.userRole = this.userData.role;
+      console.log('User profile loaded:', this.userData);
+    } catch (error) {
+      console.error('Failed to load user profile:', error);
+    }
   }
 
   // FORM CREATION
   private createBookTrainerForm(): FormGroup {
-    console.log('tttttt', this.userId);
-    
     return this.fb.group({
-      memberId: [''],
+      memberId: ['', [Validators.required]],
       trainerId: ['', [Validators.required]],
       appointmentDate: ['', [Validators.required]],
       appointmentTime: ['', [Validators.required]],
@@ -81,7 +99,7 @@ export class Appointments implements OnInit {
 
   private createBookClassForm(): FormGroup {
     return this.fb.group({
-      memberId: [this.userId],
+      memberId: ['', [Validators.required]],
       classId: ['', [Validators.required]]
     });
   }
@@ -102,6 +120,10 @@ export class Appointments implements OnInit {
     this.loadUpcomingClasses();
     this.loadAllFitnessClasses();
     this.loadAllTrainers();
+    
+    if (this.userRole === 'Member') {
+      this.loadMemberAppointments();
+    }
   }
 
   // FORM LISTENERS
@@ -113,14 +135,6 @@ export class Appointments implements OnInit {
     this.bookTrainerForm.get('appointmentTime')?.valueChanges.subscribe(() => {
       this.onDateTimeChange();
     });
-
-    this.bookTrainerForm.get('memberId')?.valueChanges.subscribe((value) => {
-      this.bookClassForm.patchValue({ memberId: value }, { emitEvent: false });
-    });
-
-    this.bookClassForm.get('memberId')?.valueChanges.subscribe((value) => {
-      this.bookTrainerForm.patchValue({ memberId: value }, { emitEvent: false });
-    });
   }
 
   // UI MANAGEMENT
@@ -128,7 +142,7 @@ export class Appointments implements OnInit {
     this.activeTab = tab;
     this.clearMessages();
 
-    if (tab === 'my-appointments') {
+    if (tab === 'my-appointments' && this.userRole === 'Member') {
       this.loadMemberAppointments();
     }
   }
@@ -140,14 +154,35 @@ export class Appointments implements OnInit {
 
   // MAIN ACTIONS
   async onBookTrainer() {
-    if (this.bookTrainerForm.invalid) return;
+    if (this.bookTrainerForm.invalid) {
+      this.markFormGroupTouched(this.bookTrainerForm);
+      this.errorMessage = 'Please fill all required fields correctly';
+      return;
+    }
 
     this.isLoading = true;
+    this.clearMessages();
+
     try {
-      const result: any = await this.appointmentService.bookTrainer(this.bookTrainerForm.value);
+      const formValue = this.bookTrainerForm.value;
+      
+      const payload = {
+        memberId: Number(this.userId),
+        trainerId: Number(formValue.trainerId),
+        appointmentDate: this.formatDateForBackend(formValue.appointmentDate),
+        appointmentTime: this.formatTimeForBackend(formValue.appointmentTime),
+        duration: Number(formValue.duration)
+      };
+
+      console.log('Booking trainer with payload:', payload);
+
+      const result: any = await this.appointmentService.bookTrainer(payload);
       this.successMessage = result.message || 'Trainer booked successfully!';
-      this.bookTrainerForm.reset();
+      this.bookTrainerForm.reset({ duration: 60 });
+      this.updateFormsWithUserId();
+      await this.loadMemberAppointments();
     } catch (error: any) {
+      console.error('Booking error:', error);
       this.errorMessage = error.error?.message || 'Failed to book trainer';
     } finally {
       this.isLoading = false;
@@ -157,41 +192,33 @@ export class Appointments implements OnInit {
   async onBookClass() {
     console.log('=== BOOK CLASS CLICKED ===');
     console.log('Form valid:', this.bookClassForm.valid);
-    console.log('Form values:', this.bookClassForm.value);
+    console.log('Selected class:', this.selectedClass);
 
-    if (this.bookClassForm.invalid) {
-      console.log('FORM IS INVALID - cannot submit');
-      this.errorMessage = 'Please fill all required fields correctly';
-      return;
-    }
-
-    if (!this.selectedClass) {
+    if (this.bookClassForm.invalid || !this.selectedClass) {
       this.errorMessage = 'Please select a class first';
       return;
     }
 
-    console.log('Form is valid, proceeding with API call...');
     this.isLoading = true;
+    this.clearMessages();
 
     try {
-      // Build payload with class details
       const payload = {
-        memberId: Number(this.userId), // Convert to number
-        trainerId: Number(this.bookTrainerForm.value.trainerId), // Convert to number
-        appointmentDate: this.bookTrainerForm.value.appointmentDate,
-        appointmentTime: this.bookTrainerForm.value.appointmentTime,
-        duration: Number(this.bookTrainerForm.value.duration) // Convert to number
+        memberId: Number(this.userId),
+        classId: Number(this.selectedClass.id),
+        appointmentDate: this.formatDateForBackend(this.selectedClass.scheduleDate),
+        appointmentTime: this.formatTimeForBackend(this.selectedClass.scheduleTime),
+        duration: Number(this.selectedClass.duration)
       };
-      
-      console.log('Sending payload to API:', payload);
+
+      console.log('Sending class booking payload:', payload);
 
       const result: any = await this.appointmentService.bookClass(payload);
-      console.log('API response:', result);
-
       this.successMessage = result.message || 'Class booked successfully!';
       this.bookClassForm.reset();
       this.selectedClass = null;
       await this.loadUpcomingClasses();
+      await this.loadMemberAppointments();
     } catch (error: any) {
       console.error('Booking error:', error);
       this.errorMessage = error.error?.message || 'Failed to book class';
@@ -201,13 +228,33 @@ export class Appointments implements OnInit {
   }
 
   async onCreateClass() {
-    if (this.createClassForm.invalid) return;
+    if (this.createClassForm.invalid) {
+      this.markFormGroupTouched(this.createClassForm);
+      this.errorMessage = 'Please fill all required fields correctly';
+      return;
+    }
 
     this.isLoading = true;
+    this.clearMessages();
+
     try {
-      const result: any = await this.appointmentService.createFitnessClass(this.createClassForm.value);
+      const formValue = this.createClassForm.value;
+      
+      const payload = {
+        className: formValue.className,
+        trainerId: Number(this.userId),
+        scheduleDate: this.formatDateForBackend(formValue.scheduleDate),
+        scheduleTime: this.formatTimeForBackend(formValue.scheduleTime),
+        duration: Number(formValue.duration),
+        maxCapacity: Number(formValue.maxCapacity)
+      };
+
+      console.log('Creating class with payload:', payload);
+
+      const result: any = await this.appointmentService.createFitnessClass(payload);
       this.successMessage = result.message || 'Class created successfully!';
-      this.createClassForm.reset();
+      this.createClassForm.reset({ duration: 60, maxCapacity: 20 });
+      this.updateFormsWithUserId();
       this.loadAllFitnessClasses();
     } catch (error: any) {
       this.errorMessage = error.error?.message || 'Failed to create class';
@@ -224,7 +271,7 @@ export class Appointments implements OnInit {
       this.successMessage = 'Appointment cancelled successfully!';
       this.loadMemberAppointments();
     } catch (error: any) {
-      this.errorMessage = error.error?.message;
+      this.errorMessage = error.error?.message || 'Failed to cancel appointment';
     }
   }
 
@@ -232,6 +279,7 @@ export class Appointments implements OnInit {
   private async loadUpcomingClasses() {
     try {
       this.upcomingClasses = await this.appointmentService.getUpcomingClasses();
+      console.log('Upcoming classes loaded:', this.upcomingClasses);
     } catch (error) {
       console.error('Failed to load upcoming classes:', error);
     }
@@ -257,25 +305,31 @@ export class Appointments implements OnInit {
     const date = this.bookTrainerForm.get('appointmentDate')?.value;
     const time = this.bookTrainerForm.get('appointmentTime')?.value;
 
-    if (!date || !time) return;
-
-    try {
-      this.availableTrainers = await this.appointmentService.getAvailableTrainers(date, time);
-    } catch (error) {
-      console.error('Failed to load available trainers:', error);
-    }
-  }
-
-  async loadMemberAppointments() {
-    const memberId = this.userId;
-    if (!memberId) {
-      this.errorMessage = 'Please enter Member ID first';
+    if (!date || !time) {
+      this.errorMessage = 'Please select both date and time first';
       return;
     }
 
     try {
-      this.memberAppointments = await this.appointmentService.getMemberAppointments(memberId);
+      const formattedDate = this.formatDateForBackend(date);
+      const formattedTime = this.formatTimeForBackend(time);
+      
+      this.availableTrainers = await this.appointmentService.getAvailableTrainers(formattedDate, formattedTime);
+    } catch (error) {
+      console.error('Failed to load available trainers:', error);
+      this.errorMessage = 'Failed to load available trainers';
+    }
+  }
+
+  async loadMemberAppointments() {
+    if (!this.userId || this.userRole !== 'Member') {
+      return;
+    }
+
+    try {
+      this.memberAppointments = await this.appointmentService.getMemberAppointments(this.userId);
     } catch (error: any) {
+      console.error('Failed to load appointments:', error);
       this.errorMessage = error.error?.message || 'Failed to load appointments';
     }
   }
@@ -292,14 +346,62 @@ export class Appointments implements OnInit {
   onClassSelected(event: any) {
     const classId = event.target.value;
     this.selectedClass = this.upcomingClasses.find((c: any) => c.id == classId);
-    
+    this.bookClassForm.patchValue({ classId: classId, memberId: this.userId });
+
     console.log('Selected class:', this.selectedClass);
   }
 
-  // HELPER FUNCTIONS
-  setMemberId() {
-    this.bookTrainerForm.patchValue({memberId: this.userId});
-    this.bookClassForm.patchValue({memberId: this.userId});
+  // FORMATTING HELPERS
+  private formatDateForBackend(dateString: string): string {
+    if (!dateString) return '';
+    
+    try {
+      // If it's already in YYYY-MM-DD format, return as is
+      if (typeof dateString === 'string' && dateString.match(/^\d{4}-\d{2}-\d{2}$/)) {
+        return dateString;
+      }
+      
+      // Convert to YYYY-MM-DD format for DateOnly
+      const date = new Date(dateString);
+      const year = date.getFullYear();
+      const month = (date.getMonth() + 1).toString().padStart(2, '0');
+      const day = date.getDate().toString().padStart(2, '0');
+      
+      return `${year}-${month}-${day}`;
+    } catch (error) {
+      console.error('Error formatting date:', error);
+      return '';
+    }
+  }
+
+  private formatTimeForBackend(timeString: string): string {
+    if (!timeString) return '';
+    
+    try {
+      // If it's already in HH:MM format, return as is
+      if (typeof timeString === 'string' && timeString.match(/^\d{2}:\d{2}$/)) {
+        return timeString;
+      }
+      
+      // Convert to HH:MM format for TimeOnly
+      if (timeString.includes(':')) {
+        const [hours, minutes] = timeString.split(':');
+        return `${hours.padStart(2, '0')}:${minutes.padStart(2, '0')}`;
+      }
+      
+      return timeString;
+    } catch (error) {
+      console.error('Error formatting time:', error);
+      return '';
+    }
+  }
+
+  // VALIDATION HELPERS
+  private markFormGroupTouched(formGroup: FormGroup) {
+    Object.keys(formGroup.controls).forEach(key => {
+      const control = formGroup.get(key);
+      control?.markAsTouched();
+    });
   }
 
   isFieldInvalid(form: FormGroup, fieldName: string): boolean {
@@ -320,25 +422,6 @@ export class Appointments implements OnInit {
       case 'completed': return 'badge bg-success';
       case 'cancelled': return 'badge bg-danger';
       default: return 'badge bg-secondary';
-    }
-  }
-
-  // DATE FORMATTING HELPER
-  private formatDate(dateString: string): string {
-    if (!dateString) return '';
-    
-    // If it's already in YYYY-MM-DD format, return as is
-    if (typeof dateString === 'string' && dateString.match(/^\d{4}-\d{2}-\d{2}$/)) {
-      return dateString;
-    }
-    
-    // If it's a Date object or ISO string, convert to YYYY-MM-DD
-    try {
-      const date = new Date(dateString);
-      return date.toISOString().split('T')[0];
-    } catch (error) {
-      console.error('Error formatting date:', error);
-      return '';
     }
   }
 }

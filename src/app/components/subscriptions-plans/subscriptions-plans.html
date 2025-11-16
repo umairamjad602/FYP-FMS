@@ -1,1 +1,381 @@
-<p>subscriptions-plans works!</p>
+<div class="p-3" *ngIf="loggedInUser?.role === 'Member'">
+    <h1>Membership Plan</h1>
+
+    <div class="membership-history">
+        <h5 class="mb-3">Membership History</h5>
+
+        <div class="row">
+            <div class="col-12" *ngFor="let membership of membershipHistoryList">
+                <div class="card mb-3">
+                    <div class="card-body">
+                        <div class="row align-items-center">
+                            <div class="col-md-6">
+                                <h6 class="card-title text-primary">{{ membership.membershipPlan?.name }}</h6>
+                                <p class="card-text mb-1">
+                                    <strong>Price:</strong> {{ membership.membershipPlan?.price }} |
+                                    <strong>Duration:</strong> {{ membership.membershipPlan?.duration }} months
+                                </p>
+                                <p class="card-text mb-1">
+                                    <strong>Start Date:</strong> {{ membership.startDate | date:'mediumDate' }} |
+                                    <strong>End Date:</strong> {{ membership.endDate | date:'mediumDate' }}
+                                </p>
+                                <p class="card-text mb-0">
+                                    <strong>Status:</strong>
+                                    <span class="badge" [class.bg-success]="membership.status === 'Active'"
+                                        [class.bg-warning]="membership.status === 'Pending'"
+                                        [class.bg-danger]="membership.status === 'Expired'"
+                                        [class.bg-info]="membership.status === 'Renewed'"
+                                        [class.bg-secondary]="membership.status === 'Cancelled'">
+                                        {{ membership.status }}
+                                    </span>
+                                </p>
+                            </div>
+                            <div class="col-md-6 text-end">
+                                <small class="text-muted d-block">
+                                    Purchased: {{ membership.createdAt | date:'mediumDate' }}
+                                </small>
+
+                                <button *ngIf="membership.canRenew" class="btn btn-warning btn-sm mt-2"
+                                    (click)="selectMembershipForRenew(membership)">
+                                    {{ membership.status === 'Expired' ? 'Renew Expired' : 'Renew Soon' }}
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div *ngIf="!membershipHistoryList || membershipHistoryList.length === 0" class="text-center py-4">
+            <p class="text-muted">No membership history found</p>
+        </div>
+    </div>
+
+    <div class="card mt-4" *ngIf="selectedMembershipForRenew">
+        <div class="card-header bg-warning text-dark">
+            <h5 class="mb-0">Renew Membership - {{ selectedMembershipForRenew.membershipPlan?.name }}</h5>
+        </div>
+        <div class="card-body">
+            <form [formGroup]="renewMembershipForm" (ngSubmit)="renewMembership()">
+                <div class="row mb-3">
+                    <div class="col-md-6">
+                        <p><strong>Plan:</strong> {{ selectedMembershipForRenew.membershipPlan?.name }}</p>
+                        <p><strong>Price:</strong> {{ selectedMembershipForRenew.membershipPlan?.price }}</p>
+                        <p><strong>Duration:</strong> {{ selectedMembershipForRenew.membershipPlan?.duration }} months
+                        </p>
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label">Payment Method *</label>
+                        <div>
+                            <div class="form-check">
+                                <input class="form-check-input" type="radio" id="renewCard" [value]="'Card'"
+                                    (click)="onPaymentMethodChange('Card')"
+                                    [checked]="renewMembershipForm.value.paymentMethod === 'Card'">
+                                <label class="form-check-label" for="renewCard">Card</label>
+                            </div>
+                            <div class="form-check">
+                                <input class="form-check-input" type="radio" id="renewCash" [value]="'Cash'"
+                                    (click)="onPaymentMethodChange('Cash')"
+                                    [checked]="renewMembershipForm.value.paymentMethod === 'Cash'">
+                                <label class="form-check-label" for="renewCash">Cash</label>
+                            </div>
+                            <div class="form-check">
+                                <input class="form-check-input" type="radio" id="renewBank" [value]="'Bank Transfer'"
+                                    (click)="onPaymentMethodChange('Bank Transfer')"
+                                    [checked]="renewMembershipForm.value.paymentMethod === 'Bank Transfer'">
+                                <label class="form-check-label" for="renewBank">Bank Transfer</label>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="d-flex gap-2">
+                    <button type="submit" class="btn btn-primary" [disabled]="renewMembershipForm.invalid">
+                        Renew Now
+                    </button>
+                    <button type="button" class="btn btn-danger" (click)="cancelRenew()">
+                        Cancel
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <form [formGroup]="purchasePlanForm" (ngSubmit)="purchaseMembership()" class="purchase-form mt-3">
+        <div class="form-group mb-3">
+            <label class="form-label">Select Membership Plan</label>
+
+            <div class="row">
+                <div class="col-md-6 mb-3" *ngFor="let plan of plansList">
+                    <div class="card plan-card" [class.selected]="selectedPlanId === plan.id"
+                        (click)="selectPlan(plan.id)">
+                        <div class="card-body">
+                            <h5 class="card-title">{{ plan.name }}</h5>
+                            <h4 class="text-primary">Price : {{ plan.price }}</h4>
+                            <p class="text-muted">{{ plan.duration }} Month{{ plan.duration > 1 ? 's' : '' }}</p>
+                            <p class="card-text">{{ plan.description }}</p>
+                            <div class="features">
+                                <small class="text-muted">{{ plan.features }}</small>
+                            </div>
+                        </div>
+                        <div class="card-footer bg-transparent">
+                            <div class="form-check">
+                                <input class="form-check-input" type="radio" [checked]="selectedPlanId === plan.id"
+                                    [value]="plan.id">
+                                <label class="form-check-label">
+                                    Select Plan
+                                </label>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <input type="hidden" formControlName="planId">
+        </div>
+
+        <!-- Payment Method Section -->
+        <div class="form-group mb-3" *ngIf="selectedPlanId">
+            <label class="form-label">Payment Method *</label>
+            <div class="mb-3">
+                <div class="form-check">
+                    <input class="form-check-input" type="radio" id="paymentCard" [value]="'Card'"
+                        (click)="onPaymentMethodChange('Card')" [checked]="selectedPaymentMethod === 'Card'">
+                    <label class="form-check-label" for="paymentCard">Manual Card (Demo)</label>
+                </div>
+                <div class="form-check">
+                    <input class="form-check-input" type="radio" id="paymentStripe" [value]="'Card'"
+                        (click)="onPaymentMethodChange('Card')" [checked]="selectedPaymentMethod === 'Card'">
+                    <label class="form-check-label" for="paymentStripe">💳 Credit/Debit Card (Stripe)</label>
+                </div>
+                <div class="form-check">
+                    <input class="form-check-input" type="radio" id="paymentCash" [value]="'Cash'"
+                        (click)="onPaymentMethodChange('Cash')" [checked]="selectedPaymentMethod === 'Cash'">
+                    <label class="form-check-label" for="paymentCash">Cash Payment</label>
+                </div>
+                <div class="form-check">
+                    <input class="form-check-input" type="radio" id="paymentBank" [value]="'Bank Transfer'"
+                        (click)="onPaymentMethodChange('Bank Transfer')"
+                        [checked]="selectedPaymentMethod === 'Bank Transfer'">
+                    <label class="form-check-label" for="paymentBank">Bank Transfer</label>
+                </div>
+            </div>
+
+            <!-- Stripe Payment Section -->
+            <div class="card mt-3" *ngIf="selectedPaymentMethod === 'Card'">
+                <div class="card-body">
+                    <h6 class="card-title">💳 Credit/Debit Card Payment</h6>
+                    <p class="text-muted">Secure payment processed by Stripe</p>
+
+                    <!-- Stripe Payment Button -->
+                    <button type="button" class="btn btn-success" (click)="processStripePayment()"
+                        [disabled]="!selectedPlanId">
+                        Pay with Stripe
+                    </button>
+
+                    <!-- Test Card Info -->
+                    <div class="mt-2">
+                        <small class="text-muted">
+                            <strong>Test Card:</strong> 4242 4242 4242 4242 | <strong>Exp:</strong> 12/34 | <strong>CVC:</strong> 123
+                        </small>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Bank Transfer Details -->
+            <div class="card mt-3" *ngIf="selectedPaymentMethod === 'Bank Transfer'">
+                <div class="card-body">
+                    <h6 class="card-title">Bank Transfer Details</h6>
+                    <div class="bank-details">
+                        <p><strong>Account Holder:</strong> {{ bankAccountDetails?.accountHolder }}</p>
+                        <p><strong>Account Number:</strong> {{ bankAccountDetails?.accountNumber }}</p>
+                        <p><strong>Bank Name:</strong> {{ bankAccountDetails?.bankName }}</p>
+                        <p><strong>Branch Code:</strong> {{ bankAccountDetails?.branchCode }}</p>
+                        <p><strong>IBAN:</strong> {{ bankAccountDetails?.iban }}</p>
+                        <p><strong>SWIFT Code:</strong> {{ bankAccountDetails?.swiftCode }}</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Cash Payment Info -->
+            <div class="card mt-3" *ngIf="selectedPaymentMethod === 'Cash'">
+                <div class="card-body">
+                    <h6 class="card-title">Cash Payment</h6>
+                    <p class="text-muted">Visit our facility to make cash payment</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Regular Submit Button (for non-Stripe payments) -->
+        <button type="submit" class="btn btn-primary" 
+                [disabled]="!selectedPlanId || !selectedPaymentMethod || selectedPaymentMethod === 'Card'"
+                *ngIf="selectedPaymentMethod !== 'Card'">
+            {{ selectedPaymentMethod === 'Card' ? 'Pay Now' : 'Submit Request' }}
+        </button>
+    </form>
+</div>
+
+<!-- Admin section remains exactly the same -->
+<div class="p-3" *ngIf="loggedInUser?.role === 'Admin'">
+    <h1>Admin Panel - Payment Management</h1>
+
+    <div class="card mt-4">
+        <div class="card-header bg-warning">
+            <h5 class="mb-0">Pending Payments</h5>
+        </div>
+        <div class="card-body">
+            <div *ngIf="pendingPayments.length === 0" class="text-center py-4">
+                <p class="text-muted">No pending payments</p>
+            </div>
+
+            <div class="table-responsive" *ngIf="pendingPayments.length > 0">
+                <table class="table table-striped">
+                    <thead>
+                        <tr>
+                            <th>Member</th>
+                            <th>Plan</th>
+                            <th>Amount</th>
+                            <th>Payment Method</th>
+                            <th>Date</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr *ngFor="let payment of pendingPayments">
+                            <td>{{ payment.member?.fullName }}</td>
+                            <td>{{ payment.membershipPlan?.name }}</td>
+                            <td>${{ payment.amount }}</td>
+                            <td>{{ payment.paymentMethod }}</td>
+                            <td>{{ payment.paymentDate | date:'medium' }}</td>
+                            <td>
+                                <button class="btn btn-success btn-sm me-2"
+                                    (click)="updatePaymentStatus(payment.id, 'Completed')">
+                                    Approve
+                                </button>
+                                <button class="btn btn-danger btn-sm"
+                                    (click)="updatePaymentStatus(payment.id, 'Cancelled')">
+                                    Reject
+                                </button>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <div class="card mt-4">
+        <div class="card-header bg-info text-white">
+            <h5 class="mb-0">Bank Account Details</h5>
+        </div>
+        <div class="card-body">
+            <form [formGroup]="bankDetailsForm" (ngSubmit)="saveBankDetails()">
+                <div class="row">
+                    <div class="col-md-6 mb-3">
+                        <label class="form-label">Account Holder</label>
+                        <input type="text" class="form-control" formControlName="accountHolder">
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        <label class="form-label">Account Number</label>
+                        <input type="text" class="form-control" formControlName="accountNumber">
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        <label class="form-label">Bank Name</label>
+                        <input type="text" class="form-control" formControlName="bankName">
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        <label class="form-label">Branch Code</label>
+                        <input type="text" class="form-control" formControlName="branchCode">
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        <label class="form-label">IBAN</label>
+                        <input type="text" class="form-control" formControlName="iban">
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        <label class="form-label">SWIFT Code</label>
+                        <input type="text" class="form-control" formControlName="swiftCode">
+                    </div>
+                </div>
+                <button type="submit" class="btn btn-primary">Update Bank Details</button>
+            </form>
+        </div>
+    </div>
+
+    <div class="card mt-4">
+        <div class="card-header bg-primary text-white">
+            <h5 class="mb-0">Manage Membership Plans</h5>
+        </div>
+        <div class="card-body">
+            <div class="row">
+                <div class="col-md-6">
+                    <form [formGroup]="createPlanForm" (ngSubmit)="createPlan()">
+                        <div class="mb-3">
+                            <label class="form-label">Plan Name</label>
+                            <input type="text" class="form-control" formControlName="name" required>
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label">Duration (Months)</label>
+                            <select class="form-select" formControlName="duration" required>
+                                <option value="1">1 Month</option>
+                                <option value="3">3 Months</option>
+                                <option value="6">6 Months</option>
+                                <option value="12">12 Months</option>
+                            </select>
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label">Price</label>
+                            <input type="number" class="form-control" formControlName="price" step="0.01" required>
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label">Description</label>
+                            <textarea class="form-control" formControlName="description" rows="2" required></textarea>
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label">Features</label>
+                            <textarea class="form-control" formControlName="features" rows="3" required></textarea>
+                            <div class="form-text">Separate features with commas</div>
+                        </div>
+
+                        <button type="submit" class="btn btn-primary me-2" [disabled]="createPlanForm.invalid">
+                            {{selectedPlanId ? 'Update Plan' : 'Create Plan'}}
+                        </button>
+                        <button type="button" class="btn btn-danger" *ngIf="selectedPlanId"
+                            (click)="deletePlan(selectedPlanId)">
+                            Delete Plan
+                        </button>
+                    </form>
+                </div>
+                <div class="col-md-6">
+                    <h6>Existing Plans</h6>
+                    <div class="row">
+                        <div class="col-12 mb-3" *ngFor="let plan of plansList">
+                            <div class="card plan-card" [class.selected]="selectedPlanId === plan.id"
+                                (click)="updatePlan(plan.id, plan)">
+                                <div class="card-body">
+                                    <h6 class="card-title">{{ plan.name }}</h6>
+                                    <p class="card-text mb-1"><strong>Price:</strong> {{ plan.price }}</p>
+                                    <p class="card-text mb-1"><strong>Duration:</strong> {{ plan.duration }} months</p>
+                                    <p class="card-text mb-1"><strong>Description:</strong> {{ plan.description }}</p>
+                                    <p class="card-text mb-0"><strong>Features:</strong> {{ plan.features }}</p>
+                                </div>
+                                <div class="card-footer bg-transparent">
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="radio"
+                                            [checked]="selectedPlanId === plan.id" [value]="plan.id">
+                                        <label class="form-check-label">
+                                            Select to Edit
+                                        </label>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

@@ -27,13 +27,13 @@
     <div class="row mb-4">
         <div class="col-12">
             <ul class="nav nav-tabs">
-                <li class="nav-item">
+                <li class="nav-item" *ngIf="userData?.role == 'Member'">
                     <button class="nav-link" [class.active]="activeTab === 'book-trainer'"
                         (click)="setActiveTab('book-trainer')">
                         Book Trainer
                     </button>
                 </li>
-                <li class="nav-item">
+                <li class="nav-item" *ngIf="userData?.role == 'Member'">
                     <button class="nav-link" [class.active]="activeTab === 'book-class'"
                         (click)="setActiveTab('book-class')">
                         Book Class
@@ -45,7 +45,7 @@
                         Create Class
                     </button>
                 </li>
-                <li class="nav-item">
+                <li class="nav-item" *ngIf="userData?.role == 'Member'">
                     <button class="nav-link" [class.active]="activeTab === 'my-appointments'"
                         (click)="setActiveTab('my-appointments')">
                         My Appointments
@@ -66,7 +66,7 @@
     </div>
 
     <!-- Book Trainer Tab -->
-    <div class="row" *ngIf="activeTab === 'book-trainer' && !isLoading">
+    <div class="row" *ngIf="activeTab === 'book-trainer' && !isLoading && userData?.role == 'Member'">
         <div class="col-md-8">
             <div class="card">
                 <div class="card-header">
@@ -105,18 +105,16 @@
                                 </div>
                             </div>
 
-                            <!-- In the Create Class Tab -->
                             <div class="col-md-6">
-                                <label for="classTrainerId" class="form-label">Trainer *</label>
-                                <select class="form-select" id="classTrainerId" formControlName="trainerId"
-                                    [class.is-invalid]="isFieldInvalid(createClassForm, 'trainerId')">
+                                <label for="trainerId" class="form-label">Trainer *</label>
+                                <select class="form-select" id="trainerId" formControlName="trainerId"
+                                    [class.is-invalid]="isFieldInvalid(bookTrainerForm, 'trainerId')">
                                     <option value="">Select trainer...</option>
-                                    <!-- Live trainers from service -->
                                     <option *ngFor="let trainer of allTrainers" [value]="trainer.id">
                                         {{ trainer.fullName }} - {{ trainer.specialization }}
                                     </option>
                                 </select>
-                                <div class="invalid-feedback" *ngIf="isFieldInvalid(createClassForm, 'trainerId')">
+                                <div class="invalid-feedback" *ngIf="isFieldInvalid(bookTrainerForm, 'trainerId')">
                                     Please select a trainer
                                 </div>
                             </div>
@@ -154,8 +152,9 @@
             </div>
         </div>
     </div>
+
     <!-- Book Class Tab -->
-    <div class="row" *ngIf="activeTab === 'book-class' && !isLoading">
+    <div class="row" *ngIf="activeTab === 'book-class' && !isLoading && userData?.role == 'Member'">
         <div class="col-md-8">
             <div class="card">
                 <div class="card-header">
@@ -236,15 +235,23 @@
                                 </div>
                             </div>
 
-                            <div class="col-md-6">
+                            <!-- Trainer Field - Show readonly for trainers, editable for others -->
+                            <div class="col-md-6" *ngIf="userRole === 'Trainer'">
+                                <label class="form-label">Trainer</label>
+                                <div class="form-control bg-light">
+                                    {{userData?.fullName}} (You)
+                                </div>
+                                <small class="text-muted">Class will be created under your account</small>
+                            </div>
+
+                            <div class="col-md-6" *ngIf="userRole !== 'Trainer'">
                                 <label for="classTrainerId" class="form-label">Trainer *</label>
                                 <select class="form-select" id="classTrainerId" formControlName="trainerId"
                                     [class.is-invalid]="isFieldInvalid(createClassForm, 'trainerId')">
                                     <option value="">Select trainer...</option>
-                                    <!-- Trainers would be loaded from another service -->
                                     <option *ngFor="let trainer of allTrainers" [value]="trainer.id">
-                                        {{trainer.fullName}}</option>
-
+                                        {{trainer.fullName}}
+                                    </option>
                                 </select>
                                 <div class="invalid-feedback" *ngIf="isFieldInvalid(createClassForm, 'trainerId')">
                                     Please select a trainer
@@ -301,7 +308,7 @@
     </div>
 
     <!-- My Appointments Tab -->
-    <div class="row" *ngIf="activeTab === 'my-appointments' && !isLoading">
+    <div class="row" *ngIf="activeTab === 'my-appointments' && !isLoading && userData.role === 'Member'">
         <div class="col-12">
             <div class="card">
                 <div class="card-header d-flex justify-content-between align-items-center">
@@ -313,7 +320,7 @@
                 <div class="card-body">
                     <div *ngIf="memberAppointments.length === 0" class="text-center py-4">
                         <p class="text-muted">No appointments found</p>
-                        <p>Enter your Member ID and switch to this tab to see your appointments</p>
+                        <p>Book a trainer or class to see your appointments here</p>
                     </div>
 
                     <div class="table-responsive" *ngIf="memberAppointments.length > 0">

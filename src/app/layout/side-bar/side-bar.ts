@@ -61,7 +61,7 @@ export class SideBar implements OnInit {
         this.sideBarItems = [
           { name: 'Dashboard', icon: 'fa-solid fa-house', route: '/dashboard' },
           { name: 'My Profile', icon: 'fa-solid fa-user', route: '/profile' },
-          { name: 'Membership Plan', icon: 'fa-solid fa-list-check', route: '/membership-plan' },
+          { name: 'Membership Plan', icon: 'fa-solid fa-list-check', route: '/subscriptions-plans' },
           { name: 'Workout Plan', icon: 'fa-solid fa-dumbbell', route: '/workout-plans' },
           { name: 'Diet Plan', icon: 'fa-solid fa-apple-whole', route: '/diet-plans' },
           { name: 'Progress', icon: 'fa-solid fa-chart-line', route: '/progress' },

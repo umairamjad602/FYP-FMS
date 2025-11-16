@@ -40,10 +40,6 @@ export class Auth extends baseAPIClass {
   isLoggedIn(): boolean {
     return !!this.getToken();
   }
-
-  getloggedInUser(){
-    
-  }
   public async getloggedInUserAsync() {
     const token = this.getToken();
     const headers = { 'Authorization': `Bearer ${token}` };
