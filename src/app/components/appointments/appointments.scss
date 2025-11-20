@@ -1,9 +1,9 @@
-// Custom styles for appointments component
+
 .appointments-container {
     min-height: 80vh;
   }
   
-  // Tab styles
+  
   .nav-tabs {
     .nav-link {
       color: #6c757d;
@@ -21,7 +21,7 @@
     }
   }
   
-  // Card enhancements
+  
   .card {
     box-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.075);
     border: 1px solid rgba(0, 0, 0, 0.125);
@@ -32,7 +32,7 @@
     }
   }
   
-  // Form enhancements
+  
   .form-label {
     font-weight: 500;
     margin-bottom: 0.5rem;
@@ -45,7 +45,7 @@
     }
   }
   
-  // Status badges
+  
   .status-badge {
     &.scheduled {
       background-color: #0d6efd;
@@ -60,13 +60,13 @@
     }
   }
   
-  // Loading animation
+  
   .spinner-border {
     width: 3rem;
     height: 3rem;
   }
   
-  // Responsive adjustments
+  
   @media (max-width: 768px) {
     .container-fluid {
       padding-left: 1rem;
@@ -85,7 +85,7 @@
     }
   }
   
-  // Custom button styles
+  
   .btn {
     font-weight: 500;
     
@@ -94,7 +94,7 @@
     }
   }
   
-  // Table enhancements
+  
   .table {
     th {
       font-weight: 600;
@@ -106,7 +106,7 @@
     }
   }
   
-  // Alert enhancements
+  
   .alert {
     border: none;
     border-radius: 0.5rem;
@@ -116,12 +116,12 @@
     }
   }
   
-  // Badge styles
+  
   .badge {
     font-size: 0.75em;
   }
   
-  // Helper classes
+  
   .text-muted {
     color: #6c757d !important;
   }

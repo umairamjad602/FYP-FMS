@@ -21,7 +21,7 @@ export class Auth extends baseAPIClass {
     return this.http.post<{ token: string; role: string;}>(`${this.baseUrl}/Users/login`, payload).pipe(
       tap((response) => {
         if (response && response.token) {
-          localStorage.setItem('authToken', response.token); // store token
+          localStorage.setItem('authToken', response.token); 
           localStorage.setItem('role', response.role);
         }
       })

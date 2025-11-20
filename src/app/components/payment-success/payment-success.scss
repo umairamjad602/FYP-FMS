@@ -1,0 +1,79 @@
+:host {
+    display: block;
+    min-height: 100vh;
+  }
+  
+  
+  .card {
+    transition: transform 0.2s ease-in-out;
+    
+    &:hover {
+      transform: translateY(-2px);
+    }
+  }
+  
+  .bg-light {
+    background-color: #f8f9fa !important;
+  }
+  
+  
+  @keyframes checkmark {
+    0% {
+      transform: scale(0);
+      opacity: 0;
+    }
+    50% {
+      transform: scale(1.2);
+      opacity: 1;
+    }
+    100% {
+      transform: scale(1);
+      opacity: 1;
+    }
+  }
+  
+  .bg-success.rounded-circle {
+    animation: checkmark 0.6s ease-in-out;
+  }
+  
+  
+  @keyframes cross {
+    0% {
+      transform: rotate(0deg) scale(0);
+      opacity: 0;
+    }
+    50% {
+      transform: rotate(-10deg) scale(1.2);
+      opacity: 1;
+    }
+    100% {
+      transform: rotate(0deg) scale(1);
+      opacity: 1;
+    }
+  }
+  
+  .bg-danger.rounded-circle {
+    animation: cross 0.6s ease-in-out;
+  }
+  
+  
+  .spinner-border {
+    animation: spinner-border 1s linear infinite;
+  }
+  
+  
+  @media (max-width: 768px) {
+    .container {
+      padding-left: 15px;
+      padding-right: 15px;
+    }
+    
+    .btn-lg {
+      width: 100%;
+      margin-bottom: 10px;
+    }
+    
+    .d-md-flex {
+      flex-direction: column;
+    }
+  }

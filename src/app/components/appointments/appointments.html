@@ -27,6 +27,12 @@
     <div class="row mb-4">
         <div class="col-12">
             <ul class="nav nav-tabs">
+                <li class="nav-item" *ngIf="userData?.role == 'Admin'">
+                    <button class="nav-link" [class.active]="activeTab === 'pending-payments'"
+                        (click)="setActiveTab('pending-payments')">
+                        Pending Payments
+                    </button>
+                </li>
                 <li class="nav-item" *ngIf="userData?.role == 'Member'">
                     <button class="nav-link" [class.active]="activeTab === 'book-trainer'"
                         (click)="setActiveTab('book-trainer')">
@@ -215,6 +221,100 @@
         </div>
     </div>
 
+    <!-- Admin Pending Payments Tab -->
+    <div class="row" *ngIf="activeTab === 'pending-payments' && !isLoading && userData?.role === 'Admin'">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <h5 class="card-title mb-0">Pending Appointment Payments</h5>
+                    <button type="button" class="btn btn-outline-primary btn-sm" (click)="loadPendingPayments()">
+                        Refresh
+                    </button>
+                </div>
+                <div class="card-body">
+                    <div *ngIf="pendingPayments.length === 0" class="text-center py-4">
+                        <p class="text-muted">No pending payments found</p>
+                    </div>
+
+                    <div class="table-responsive" *ngIf="pendingPayments.length > 0">
+                        <table class="table table-striped">
+                            <thead>
+                                <tr>
+                                    <th>Member</th>
+                                    <th>Appointment Type</th>
+                                    <th>Details</th>
+                                    <th>Amount</th>
+                                    <th>Payment Method</th>
+                                    <th>Payment Date</th>
+                                    <th>Status</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr *ngFor="let payment of pendingPayments">
+                                    <td>
+                                        <strong>{{ payment.member?.fullName }}</strong><br>
+                                        <small class="text-muted">{{ payment.member?.email }}</small>
+                                    </td>
+                                    <td>
+                                        <span *ngIf="payment.paymentType === 'Trainer'"
+                                            class="badge bg-info">Trainer</span>
+                                        <span *ngIf="payment.paymentType === 'Class'"
+                                            class="badge bg-success">Class</span>
+                                    </td>
+                                    <td>
+                                        <div *ngIf="payment.appointment?.trainer">
+                                            <strong>Trainer:</strong> {{ payment.appointment.trainer.fullName }}<br>
+                                            <small class="text-muted">Date: {{ payment.appointment.appointmentDate }} at
+                                                {{ payment.appointment.appointmentTime }}</small>
+                                        </div>
+                                        <div *ngIf="payment.appointment?.fitnessClass">
+                                            <strong>Class:</strong> {{ payment.appointment.fitnessClass.className }}<br>
+                                            <small class="text-muted">Date: {{ payment.appointment.appointmentDate }} at
+                                                {{ payment.appointment.appointmentTime }}</small>
+                                        </div>
+                                    </td>
+                                    <td>${{ payment.amount }}</td>
+                                    <td>
+                                        <span class="badge" [class.bg-warning]="payment.paymentMethod === 'Cash'"
+                                            [class.bg-info]="payment.paymentMethod === 'Bank Transfer'"
+                                            [class.bg-primary]="payment.paymentMethod === 'Stripe'">
+                                            {{ payment.paymentMethod }}
+                                        </span>
+                                    </td>
+                                    <td>
+                                        {{ payment.paymentDate | date:'medium' }}
+                                    </td>
+                                    <td>
+                                        <span [class]="getPaymentStatusBadgeClass(payment.status)">
+                                            {{ payment.status }}
+                                        </span>
+                                    </td>
+                                    <td>
+                                        <div class="btn-group btn-group-sm">
+                                            <button *ngIf="payment.status === 'Pending'" type="button"
+                                                class="btn btn-success btn-sm" (click)="approvePayment(payment.id)">
+                                                Approve
+                                            </button>
+                                            <button *ngIf="payment.status === 'Pending'" type="button"
+                                                class="btn btn-danger btn-sm" (click)="rejectPayment(payment.id)">
+                                                Reject
+                                            </button>
+                                            <button *ngIf="payment.status !== 'Pending'" type="button"
+                                                class="btn btn-outline-secondary btn-sm" disabled>
+                                                {{ payment.status }}
+                                            </button>
+                                        </div>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <!-- Create Class Tab -->
     <div class="row" *ngIf="activeTab === 'create-class' && !isLoading && userData?.role == 'Trainer'">
         <div class="col-md-8">
@@ -332,6 +432,7 @@
                                     <th>Date & Time</th>
                                     <th>Duration</th>
                                     <th>Status</th>
+                                    <th>Payment</th>
                                     <th>Actions</th>
                                 </tr>
                             </thead>
@@ -343,8 +444,7 @@
                                     </td>
                                     <td>
                                         <div *ngIf="appointment.trainer">
-                                            <strong>{{ appointment.trainer.name }}</strong><br>
-                                            <small class="text-muted">{{ appointment.trainer.specialization }}</small>
+                                            <strong>{{ appointment.trainer.fullName }}</strong><br>
                                         </div>
                                         <div *ngIf="appointment.fitnessClass">
                                             <strong>{{ appointment.fitnessClass.className }}</strong><br>
@@ -363,6 +463,12 @@
                                         </span>
                                     </td>
                                     <td>
+                                        <span
+                                            [class]="appointment.paymentStatus === 'Completed' ? 'badge bg-success' : 'badge bg-warning'">
+                                            {{ appointment.paymentStatus || 'Pending' }}
+                                        </span>
+                                    </td>
+                                    <td>
                                         <button *ngIf="appointment.status === 'Scheduled'" type="button"
                                             class="btn btn-outline-danger btn-sm"
                                             (click)="onCancelAppointment(appointment.id)">
@@ -377,4 +483,84 @@
             </div>
         </div>
     </div>
+
+    <!-- Payment Modal -->
+    <!-- Payment Modal -->
+    <div class="modal fade" [class.show]="showPaymentModal" [style.display]="showPaymentModal ? 'block' : 'none'"
+        tabindex="-1" role="dialog">
+        <div class="modal-dialog modal-dialog-centered" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Complete Payment</h5>
+                    <button type="button" class="btn-close" (click)="closePaymentModal()"></button>
+                </div>
+                <div class="modal-body">
+                    <!-- Price Display -->
+                    <div class="alert alert-info mb-3">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <strong>Total Amount:</strong>
+                            <span class="h5 mb-0 text-primary">
+                                ${{ getAppointmentPrice() }}
+                            </span>
+                        </div>
+                        <small class="text-muted">
+                            {{ selectedAppointmentForPayment?.type === 'trainer' ? 'Personal Training Session' :
+                            'Fitness Class' }}
+                        </small>
+                    </div>
+
+                    <p class="mb-3">Please select your preferred payment method to confirm your booking:</p>
+
+                    <div class="form-check mb-3">
+                        <input class="form-check-input" type="radio" name="paymentMethod" id="cardPayment" value="Card"
+                            (change)="onPaymentMethodChange('Card')" [checked]="selectedPaymentMethod === 'Card'">
+                        <label class="form-check-label" for="cardPayment">
+                            <i class="bi bi-credit-card me-2"></i>Credit/Debit Card (Stripe)
+                        </label>
+                    </div>
+
+                    <div class="form-check mb-3">
+                        <input class="form-check-input" type="radio" name="paymentMethod" id="cashPayment" value="Cash"
+                            (change)="onPaymentMethodChange('Cash')" [checked]="selectedPaymentMethod === 'Cash'">
+                        <label class="form-check-label" for="cashPayment">
+                            <i class="bi bi-cash-coin me-2"></i>Cash Payment
+                        </label>
+                    </div>
+
+                    <div class="form-check mb-3">
+                        <input class="form-check-input" type="radio" name="paymentMethod" id="bankPayment"
+                            value="Bank Transfer" (change)="onPaymentMethodChange('Bank Transfer')"
+                            [checked]="selectedPaymentMethod === 'Bank Transfer'">
+                        <label class="form-check-label" for="bankPayment">
+                            <i class="bi bi-bank me-2"></i>Bank Transfer
+                        </label>
+                    </div>
+
+                    <div class="alert alert-warning mt-3" *ngIf="selectedPaymentMethod">
+                        <small>
+                            <strong>Note:</strong>
+                            <span *ngIf="selectedPaymentMethod === 'Card'">
+                                You will be redirected to Stripe for secure payment processing.
+                            </span>
+                            <span *ngIf="selectedPaymentMethod === 'Cash' || selectedPaymentMethod === 'Bank Transfer'">
+                                Your booking will be confirmed after admin approval of the payment.
+                            </span>
+                        </small>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-outline-secondary"
+                        (click)="closePaymentModal()">Cancel</button>
+                    <button type="button" class="btn btn-primary" (click)="processPayment()"
+                        [disabled]="!selectedPaymentMethod || isLoading">
+                        <span *ngIf="isLoading" class="spinner-border spinner-border-sm me-2"></span>
+                        {{ selectedPaymentMethod === 'Card' ? 'Pay $' + getAppointmentPrice() : 'Confirm Payment' }}
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal Backdrop -->
+    <div class="modal-backdrop fade show" *ngIf="showPaymentModal"></div>
 </div>

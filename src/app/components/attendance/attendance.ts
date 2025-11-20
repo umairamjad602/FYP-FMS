@@ -66,7 +66,7 @@ export class Attendance implements OnInit {
 
   onDateChange() {
     console.log('Date changed to:', this.selectedDate);
-    // In real app, fetch attendance data for selected date
+    
   }
 
   filterMembers() {
@@ -122,7 +122,7 @@ export class Attendance implements OnInit {
   }
 
   public async saveAttendance(member:any) {
-    // In real app, send data to backend
+    
     console.log(this.userProfile.fullName,member[0],this.status,  'googg');
     
     const payload = {

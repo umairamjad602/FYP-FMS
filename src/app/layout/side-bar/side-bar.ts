@@ -40,6 +40,7 @@ export class SideBar implements OnInit {
           { name: 'Plans', icon: 'fa-solid fa-list-check', route: '/subscriptions-plans' },
           { name: 'Payments', icon: 'fa-solid fa-credit-card', route: '/payments' },
           { name: 'Attendance', icon: 'fa-solid fa-clipboard-check', route: '/attendance' },
+          { name: 'Appointments', icon: 'fa-solid fa-calendar-check', route: '/appointments' },
           { name: 'Reports', icon: 'fa-solid fa-chart-line', route: '/reports' },
           { name: 'Notifications', icon: 'fa-solid fa-bell', route: '/notifications' },
           { name: 'Settings', icon: 'fa-solid fa-gear', route: '/settings' }
@@ -72,7 +73,7 @@ export class SideBar implements OnInit {
         ];
         break;
 
-      // Fallback (no role found)
+      
       default:
         this.sideBarItems = [
           { name: 'Dashboard', icon: 'fa-solid fa-house', route: '/dashboard' }

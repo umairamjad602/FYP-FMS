@@ -21,7 +21,7 @@ export class Reviews {
   public selectedTrainer: any = null;
   public memberId: number;
   
-  // Review management properties
+  
   public myReviews: any[] = [];
   public isEditing: boolean = false;
   public editingReviewId: number = 0;
@@ -86,7 +86,7 @@ export class Reviews {
           await this.memberService.createReview(payload);
         }
         
-        await this.loadMyReviews(); // Refresh reviews list
+        await this.loadMyReviews(); 
         this.resetForm();
         alert(this.isEditing ? 'Review updated successfully!' : 'Review submitted successfully!');
       } catch (error) {
@@ -115,7 +115,7 @@ export class Reviews {
     if (confirm('Are you sure you want to delete this review?')) {
       try {
         await this.memberService.deleteReview(reviewId);
-        await this.loadMyReviews(); // Refresh reviews list
+        await this.loadMyReviews(); 
         
         if (this.isEditing && this.editingReviewId === reviewId) {
           this.resetForm();

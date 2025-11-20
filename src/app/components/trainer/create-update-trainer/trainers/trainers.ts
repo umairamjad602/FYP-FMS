@@ -73,7 +73,7 @@ export class Trainers {
 
   public async getMemberListAsync() {
     const response: any = await this.memberService.getMembersAsync();
-    // console.log(response, 'rsp');
+    
     this.membersList = response;
   }
 

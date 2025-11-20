@@ -11,88 +11,257 @@ export class PlansService extends baseAPIClass {
     super();
   }
 
-  // Get all active membership plans
+  
   public async getMembershipPlans() {
-    return await firstValueFrom(this.httpClient.get(`${this.baseUrl}/Membership/plans`));
+    try {
+      return await firstValueFrom(this.httpClient.get(`${this.baseUrl}/Membership/plans`));
+    } catch (error) {
+      console.error('Error fetching membership plans:', error);
+      throw error;
+    }
   }
 
-  // Purchase a new membership
-  public async purchaseMembership(payload: any) {
-    return await firstValueFrom(this.httpClient.post(`${this.baseUrl}/Membership/purchase`, payload));
+  
+  public async purchaseMembership(payload: { memberId: number; planId: number; paymentMethod: string }) {
+    try {
+      return await firstValueFrom(
+        this.httpClient.post<{
+          message: string;
+          membershipId: number;
+          status: string;
+          endDate: string;
+        }>(`${this.baseUrl}/Membership/purchase`, payload)
+      );
+    } catch (error) {
+      console.error('Error purchasing membership:', error);
+      throw error;
+    }
   }
 
-  // Renew existing membership
-  public async renewMembership(payload: any) {
-    return await firstValueFrom(this.httpClient.post(`${this.baseUrl}/Membership/renew`, payload));
+  
+  public async renewMembership(payload: { memberId: number; membershipId: number; paymentMethod: string }) {
+    try {
+      return await firstValueFrom(
+        this.httpClient.post<{
+          message: string;
+          renewalMembershipId: number;
+          status: string;
+          currentMembershipStatus: string;
+          startDate: string;
+          endDate: string;
+          requiresPayment: boolean;
+        }>(`${this.baseUrl}/Membership/renew`, payload)
+      );
+    } catch (error) {
+      console.error('Error renewing membership:', error);
+      throw error;
+    }
   }
 
-  // Get member's current membership status
+  
   public async getMemberStatus(memberId: number) {
-    return await firstValueFrom(this.httpClient.get(`${this.baseUrl}/Membership/status/${memberId}`));
+    try {
+      return await firstValueFrom(
+        this.httpClient.get<{
+          Status: string;
+          CurrentMembership: any;
+          LastRenewal: string;
+        }>(`${this.baseUrl}/Membership/status/${memberId}`)
+      );
+    } catch (error) {
+      console.error('Error fetching member status:', error);
+      throw error;
+    }
   }
 
-  // Get member's membership history
+  
   public async getMembershipHistory(memberId: number) {
-    return await firstValueFrom(this.httpClient.get(`${this.baseUrl}/Membership/history/${memberId}`));
+    try {
+      return await firstValueFrom(
+        this.httpClient.get<any[]>(`${this.baseUrl}/Membership/history/${memberId}`)
+      );
+    } catch (error) {
+      console.error('Error fetching membership history:', error);
+      throw error;
+    }
   }
 
-  // Admin functions
-  public async createPlan(payload: any) {
-    return await firstValueFrom(this.httpClient.post(`${this.baseUrl}/Membership/plans`, payload));
+  
+  public async createPlan(payload: { 
+    name: string; 
+    duration: number; 
+    price: number; 
+    description: string; 
+    features: string; 
+  }) {
+    try {
+      return await firstValueFrom(
+        this.httpClient.post<{ message: string; planId: number }>(
+          `${this.baseUrl}/Membership/plans`, 
+          payload
+        )
+      );
+    } catch (error) {
+      console.error('Error creating plan:', error);
+      throw error;
+    }
   }
 
-  public async updatePlan(id: number, payload: any) {
-    return await firstValueFrom(this.httpClient.put(`${this.baseUrl}/Membership/plans/${id}`, payload));
+  public async updatePlan(id: number, payload: { 
+    name: string; 
+    duration: number; 
+    price: number; 
+    description: string; 
+    features: string; 
+    isActive: boolean;
+  }) {
+    try {
+      return await firstValueFrom(
+        this.httpClient.put<{ message: string }>(
+          `${this.baseUrl}/Membership/plans/${id}`, 
+          payload
+        )
+      );
+    } catch (error) {
+      console.error('Error updating plan:', error);
+      throw error;
+    }
   }
 
   public async deletePlan(id: number) {
-    return await firstValueFrom(this.httpClient.delete(`${this.baseUrl}/Membership/plans/${id}`));
+    try {
+      return await firstValueFrom(
+        this.httpClient.delete<{ message: string }>(
+          `${this.baseUrl}/Membership/plans/${id}`
+        )
+      );
+    } catch (error) {
+      console.error('Error deleting plan:', error);
+      throw error;
+    }
   }
 
-  // Get pending payments (Admin only)
+  
   public async getPendingPayments() {
-    return await firstValueFrom(this.httpClient.get(`${this.baseUrl}/Membership/pending-payments`));
+    try {
+      return await firstValueFrom(
+        this.httpClient.get<any[]>(`${this.baseUrl}/Membership/pending-payments`)
+      );
+    } catch (error) {
+      console.error('Error fetching pending payments:', error);
+      throw error;
+    }
   }
 
-  // Update payment status (Admin only)
-  public async updatePaymentStatus(payload: any) {
-    return await firstValueFrom(this.httpClient.post(`${this.baseUrl}/Membership/update-payment-status`, payload));
+  
+  public async updatePaymentStatus(payload: { paymentId: number; newStatus: string }) {
+    try {
+      return await firstValueFrom(
+        this.httpClient.post<{ message: string }>(
+          `${this.baseUrl}/Membership/update-payment-status`, 
+          payload
+        )
+      );
+    } catch (error) {
+      console.error('Error updating payment status:', error);
+      throw error;
+    }
   }
 
-  // Update membership status (Admin only)
-  public async updateMembershipStatus(payload: any) {
-    return await firstValueFrom(this.httpClient.post(`${this.baseUrl}/Membership/update-membership-status`, payload));
+  
+  public async updateMembershipStatus(payload: { membershipId: number; newStatus: string }) {
+    try {
+      return await firstValueFrom(
+        this.httpClient.post<{ message: string }>(
+          `${this.baseUrl}/Membership/update-membership-status`, 
+          payload
+        )
+      );
+    } catch (error) {
+      console.error('Error updating membership status:', error);
+      throw error;
+    }
   }
 
-  // Bank details functions
+  
   public async getBankDetails() {
-    return await firstValueFrom(this.httpClient.get(`${this.baseUrl}/Membership/bank-details`));
+    try {
+      return await firstValueFrom(
+        this.httpClient.get<any>(`${this.baseUrl}/Membership/bank-details`)
+      );
+    } catch (error) {
+      console.error('Error fetching bank details:', error);
+      throw error;
+    }
   }
 
-  public async saveBankDetails(payload: any) {
-    return await firstValueFrom(this.httpClient.post(`${this.baseUrl}/Membership/bank-details`, payload));
+  public async saveBankDetails(payload: {
+    accountHolder: string;
+    accountNumber: string;
+    bankName: string;
+    branchCode: string;
+    iban: string;
+    swiftCode: string;
+  }) {
+    try {
+      return await firstValueFrom(
+        this.httpClient.post<{ message: string }>(
+          `${this.baseUrl}/Membership/bank-details`, 
+          payload
+        )
+      );
+    } catch (error) {
+      console.error('Error saving bank details:', error);
+      throw error;
+    }
   }
 
-  // STRIPE PAYMENT METHODS
+  
   public async createStripeSession(memberId: number, planId: number) {
-    return await firstValueFrom(
-      this.httpClient.post<{ sessionId: string }>(
-        `${this.baseUrl}/Membership/create-payment-session`, 
-        { memberId, planId }
-      )
-    );
+    try {
+      return await firstValueFrom(
+        this.httpClient.post<{ sessionId: string }>(
+          `${this.baseUrl}/Membership/create-payment-session`, 
+          { memberId, planId }
+        )
+      );
+    } catch (error) {
+      console.error('Error creating Stripe session:', error);
+      throw error;
+    }
+  }
+
+  
+  public async createRenewalPaymentSession(memberId: number, renewalMembershipId: number) {
+    try {
+      return await firstValueFrom(
+        this.httpClient.post<{ sessionId: string }>(
+          `${this.baseUrl}/Membership/create-renewal-payment-session`, 
+          { memberId, renewalMembershipId }
+        )
+      );
+    } catch (error) {
+      console.error('Error creating renewal Stripe session:', error);
+      throw error;
+    }
   }
 
   public async confirmStripePayment(sessionId: string) {
-    return await firstValueFrom(
-      this.httpClient.post<{ 
-        message: string; 
-        membershipId: number; 
-        endDate: string;
-      }>(
-        `${this.baseUrl}/Membership/confirm-stripe-payment`, 
-        { sessionId }
-      )
-    );
+    try {
+      return await firstValueFrom(
+        this.httpClient.post<{ 
+          message: string; 
+          membershipId: number; 
+          status: string;
+          endDate: string;
+        }>(
+          `${this.baseUrl}/Membership/confirm-stripe-payment`, 
+          { sessionId }
+        )
+      );
+    } catch (error) {
+      console.error('Error confirming Stripe payment:', error);
+      throw error;
+    }
   }
 }

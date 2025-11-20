@@ -18,6 +18,7 @@ import { WorkoutPlans } from './components/workout-plans/workout-plans';
 import { DietPlans } from './components/diet-plans/diet-plans';
 import { Progress } from './components/progress/progress';
 import { Appointments } from './components/appointments/appointments';
+import { PaymentSuccess} from './components/payment-success/payment-success';
 
 export const routes: Routes = [
   {
@@ -104,7 +105,8 @@ export const routes: Routes = [
       {
         path: 'appointments',
         component: Appointments
-      }
+      },
+      { path: 'payment-success', component: PaymentSuccess }
     ]
   },
   { 

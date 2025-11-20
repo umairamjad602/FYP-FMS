@@ -42,7 +42,7 @@ interface UserProfile {
   role: string;
   name: string;
   email: string;
-  // Add other properties as per your API response
+  
 }
 
 @Component({
@@ -59,7 +59,7 @@ export class WorkoutPlans implements OnInit {
   
   workoutPlans: WorkoutPlan[] = [];
   assignedMembers: any[] = [];
-  trainerMembers: Member[] = []; // Only members assigned to current trainer
+  trainerMembers: Member[] = []; 
   myAssignedWorkout: any = [];
   
   isEditing: boolean = false;
@@ -69,17 +69,17 @@ export class WorkoutPlans implements OnInit {
   showAssignModal: boolean = false;
   selectedWorkoutForAssign: WorkoutPlan | null = null;
 
-  // Role-based access
+  
   userRole: string = 'Trainer';
   userId: number = 0;
-  userProfile: UserProfile | null = null; // Store user profile
+  userProfile: UserProfile | null = null; 
   difficulties = ['Beginner', 'Intermediate', 'Advanced', 'Expert'];
   
   constructor(
     private fb: FormBuilder,
     private workoutPlanService: WorkoutPlanService,
     private memberService: MemberService,
-    private authService: Auth, // Inject AuthService
+    private authService: Auth, 
     private toastr: ToastrService
   ) {
     this.workoutForm = this.fb.group({
@@ -163,7 +163,7 @@ export class WorkoutPlans implements OnInit {
   async loadMyAssignedWorkout() {
     try {
       const response: any = await this.workoutPlanService.getWorkoutPlansByMember(this.userId);
-      this.myAssignedWorkout = response || []; // Store all workout plans
+      this.myAssignedWorkout = response || []; 
       
       console.log('Loaded assigned workouts:', this.myAssignedWorkout);
       
@@ -179,7 +179,7 @@ export class WorkoutPlans implements OnInit {
   }
 
   updateAssignedMembers() {
-    // Get members who are assigned to any workout plan (only from trainer's members)
+    
     const assignedMemberIds = new Set<number>();
     
     this.workoutPlans.forEach(workout => {
@@ -193,7 +193,7 @@ export class WorkoutPlans implements OnInit {
     );
   }
 
-  // Get assigned workout for a specific member
+  
   getAssignedWorkoutForMember(memberId: number): WorkoutPlan | null {
     for (const workout of this.workoutPlans) {
       if (workout.assignedTo && workout.assignedTo.includes(memberId)) {
@@ -203,15 +203,15 @@ export class WorkoutPlans implements OnInit {
     return null;
   }
 
-  // Get assigned workout name for a member
-  // Get ALL assigned workouts for a specific member
+  
+  
 getAssignedWorkoutsForMember(memberId: number): WorkoutPlan[] {
   return this.workoutPlans.filter(workout => 
     workout.assignedTo && workout.assignedTo.includes(memberId)
   );
 }
 
-// Get assigned workout names for display
+
 getAssignedWorkoutNames(member: Member): string {
   const assignedWorkouts = this.getAssignedWorkoutsForMember(member.id);
   
@@ -224,7 +224,7 @@ getAssignedWorkoutNames(member: Member): string {
   }
 }
 
-// Get detailed workout info for tooltip or modal
+
 getAssignedWorkoutsDetail(member: Member): string {
   const assignedWorkouts = this.getAssignedWorkoutsForMember(member.id);
   
@@ -395,7 +395,7 @@ getAssignedWorkoutsDetail(member: Member): string {
         let successCount = 0;
         let errorCount = 0;
 
-        // Assign workout to each selected member
+        
         for (const memberId of memberIds) {
           try {
             const payload = {
@@ -410,7 +410,7 @@ getAssignedWorkoutsDetail(member: Member): string {
           }
         }
 
-        // Update local data
+        
         if (this.selectedWorkoutForAssign) {
           const currentAssigned = this.selectedWorkoutForAssign.assignedTo || [];
           const newAssignments = memberIds.filter((id: number) => !currentAssigned.includes(id));
@@ -443,12 +443,12 @@ getAssignedWorkoutsDetail(member: Member): string {
   async unassignMember(memberId: number) {
     if (confirm('Are you sure you want to unassign this member?')) {
       try {
-        // Find which workout this member is assigned to
+        
         const assignedWorkout = this.getAssignedWorkoutForMember(memberId);
         if (assignedWorkout && assignedWorkout.id) {
           await this.workoutPlanService.unassignWorkoutFromMember(assignedWorkout.id, memberId);
           
-          // Remove from local data
+          
           assignedWorkout.assignedTo = assignedWorkout.assignedTo?.filter(id => id !== memberId) || [];
           this.updateAssignedMembers();
           this.toastr.success('Member unassigned successfully!');
@@ -530,30 +530,30 @@ getAssignedWorkoutsDetail(member: Member): string {
     return this.selectedWorkoutForAssign?.assignedTo?.includes(memberId) || false;
   }
 
-  // Get available members for assignment (only trainer's members)
+  
   getAvailableMembers(): any[] {
     return this.trainerMembers.filter(member => 
       !this.selectedWorkoutForAssign?.assignedTo?.includes(member.id)
     );
   }
 
-  // Helper to get assigned members count for a workout
+  
   getAssignedMembersCount(workout: WorkoutPlan): number {
     return workout.assignedTo?.length || 0;
   }
 
-  // Helper to check if workout has exercises
+  
   hasExercises(workout: WorkoutPlan): boolean {
     return workout.exercises && workout.exercises.length > 0;
   }
 
-  // Get member name by ID
+  
   getMemberName(memberId: number): string {
     const member = this.trainerMembers.find(m => m.id === memberId);
     return member ? (member.fullName || member.name || 'Unknown Member') : 'Unknown Member';
   }
 
-  // Get current user's name for display
+  
   getCurrentUserName(): string {
     return this.userProfile?.name || 'User';
   }

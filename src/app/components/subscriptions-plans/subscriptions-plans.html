@@ -12,7 +12,7 @@
                             <div class="col-md-6">
                                 <h6 class="card-title text-primary">{{ membership.membershipPlan?.name }}</h6>
                                 <p class="card-text mb-1">
-                                    <strong>Price:</strong> {{ membership.membershipPlan?.price }} |
+                                    <strong>Price:</strong> ${{ membership.membershipPlan?.price }} |
                                     <strong>Duration:</strong> {{ membership.membershipPlan?.duration }} months
                                 </p>
                                 <p class="card-text mb-1">
@@ -21,13 +21,20 @@
                                 </p>
                                 <p class="card-text mb-0">
                                     <strong>Status:</strong>
-                                    <span class="badge" [class.bg-success]="membership.status === 'Active'"
-                                        [class.bg-warning]="membership.status === 'Pending'"
+                                    <span class="badge" 
+                                        [class.bg-success]="membership.status === 'Active' || membership.status === 'Renewal Active'"
+                                        [class.bg-warning]="membership.status === 'Pending' || membership.status === 'Renewal Pending'"
                                         [class.bg-danger]="membership.status === 'Expired'"
                                         [class.bg-info]="membership.status === 'Renewed'"
                                         [class.bg-secondary]="membership.status === 'Cancelled'">
                                         {{ membership.status }}
                                     </span>
+                                </p>
+                                <!-- Show renewal relationship if exists -->
+                                <p *ngIf="membership.renewedFromId" class="card-text mb-0">
+                                    <small class="text-muted">
+                                        <i class="fas fa-sync-alt me-1"></i>Renewed from previous membership
+                                    </small>
                                 </p>
                             </div>
                             <div class="col-md-6 text-end">
@@ -39,6 +46,14 @@
                                     (click)="selectMembershipForRenew(membership)">
                                     {{ membership.status === 'Expired' ? 'Renew Expired' : 'Renew Soon' }}
                                 </button>
+                                
+                                <!-- Show if this is a renewal membership -->
+                                <div *ngIf="membership.status?.startsWith('Renewal')" class="mt-2">
+                                    <small class="text-info">
+                                        <i class="fas fa-info-circle me-1"></i>
+                                        {{ membership.status === 'Renewal Pending' ? 'Waiting for payment/approval' : 'Renewal active' }}
+                                    </small>
+                                </div>
                             </div>
                         </div>
                     </div>
@@ -51,171 +66,260 @@
         </div>
     </div>
 
+    <!-- Renew Membership Card -->
     <div class="card mt-4" *ngIf="selectedMembershipForRenew">
         <div class="card-header bg-warning text-dark">
-            <h5 class="mb-0">Renew Membership - {{ selectedMembershipForRenew.membershipPlan?.name }}</h5>
+            <h5 class="mb-0">
+                <i class="fas fa-sync-alt me-2"></i>
+                Renew Membership - {{ selectedMembershipForRenew.membershipPlan?.name }}
+            </h5>
         </div>
         <div class="card-body">
+            <div class="alert alert-info">
+                <strong>Note:</strong> Your renewal will start after your current membership ends on
+                <strong>{{ selectedMembershipForRenew.endDate | date:'mediumDate' }}</strong>
+            </div>
+
             <form [formGroup]="renewMembershipForm" (ngSubmit)="renewMembership()">
                 <div class="row mb-3">
                     <div class="col-md-6">
-                        <p><strong>Plan:</strong> {{ selectedMembershipForRenew.membershipPlan?.name }}</p>
-                        <p><strong>Price:</strong> {{ selectedMembershipForRenew.membershipPlan?.price }}</p>
-                        <p><strong>Duration:</strong> {{ selectedMembershipForRenew.membershipPlan?.duration }} months
+                        <h6>Renewal Details</h6>
+                        <p><strong>Current Plan:</strong> {{ selectedMembershipForRenew.membershipPlan?.name }}</p>
+                        <p><strong>Renewal Price:</strong> ${{ selectedMembershipForRenew.membershipPlan?.price }}</p>
+                        <p><strong>Duration:</strong> {{ selectedMembershipForRenew.membershipPlan?.duration }} months</p>
+                        <p><strong>Renewal Start Date:</strong> {{ selectedMembershipForRenew.endDate | date:'mediumDate' }}</p>
+                        <p><strong>Renewal End Date:</strong> 
+                            {{ (selectedMembershipForRenew.endDate | calculateEndDate:selectedMembershipForRenew.membershipPlan?.duration) | date:'mediumDate' }}
                         </p>
                     </div>
                     <div class="col-md-6">
-                        <label class="form-label">Payment Method *</label>
-                        <div>
+                        <label class="form-label fw-bold">Payment Method *</label>
+
+                        <!-- Validation Message -->
+                        <div *ngIf="renewMembershipForm.get('paymentMethod')?.touched && renewMembershipForm.get('paymentMethod')?.invalid"
+                            class="alert alert-danger py-2">
+                            <small>Please select a payment method</small>
+                        </div>
+
+                        <div class="mb-3">
                             <div class="form-check">
-                                <input class="form-check-input" type="radio" id="renewCard" [value]="'Card'"
-                                    (click)="onPaymentMethodChange('Card')"
-                                    [checked]="renewMembershipForm.value.paymentMethod === 'Card'">
-                                <label class="form-check-label" for="renewCard">Card</label>
+                                <input class="form-check-input" type="radio" id="renewCard" value="Card"
+                                    formControlName="paymentMethod">
+                                <label class="form-check-label" for="renewCard">
+                                    <i class="fas fa-credit-card me-1"></i> Credit/Debit Card (Stripe)
+                                </label>
                             </div>
                             <div class="form-check">
-                                <input class="form-check-input" type="radio" id="renewCash" [value]="'Cash'"
-                                    (click)="onPaymentMethodChange('Cash')"
-                                    [checked]="renewMembershipForm.value.paymentMethod === 'Cash'">
-                                <label class="form-check-label" for="renewCash">Cash</label>
+                                <input class="form-check-input" type="radio" id="renewCash" value="Cash"
+                                    formControlName="paymentMethod">
+                                <label class="form-check-label" for="renewCash">
+                                    <i class="fas fa-money-bill me-1"></i> Cash Payment
+                                </label>
                             </div>
                             <div class="form-check">
-                                <input class="form-check-input" type="radio" id="renewBank" [value]="'Bank Transfer'"
-                                    (click)="onPaymentMethodChange('Bank Transfer')"
-                                    [checked]="renewMembershipForm.value.paymentMethod === 'Bank Transfer'">
-                                <label class="form-check-label" for="renewBank">Bank Transfer</label>
+                                <input class="form-check-input" type="radio" id="renewBank" value="Bank Transfer"
+                                    formControlName="paymentMethod">
+                                <label class="form-check-label" for="renewBank">
+                                    <i class="fas fa-university me-1"></i> Bank Transfer
+                                </label>
                             </div>
+                        </div>
+
+                        <!-- Show current selected payment method -->
+                        <div *ngIf="renewMembershipForm.get('paymentMethod')?.value" class="alert alert-success py-2">
+                            <small>
+                                <i class="fas fa-check me-1"></i>
+                                Selected: <strong>{{ renewMembershipForm.get('paymentMethod')?.value }}</strong>
+                            </small>
+                        </div>
+
+                        <!-- Stripe Payment Info for Renewal -->
+                        <div *ngIf="renewMembershipForm.get('paymentMethod')?.value === 'Card'"
+                            class="alert alert-warning">
+                            <small>
+                                <i class="fas fa-info-circle me-1"></i>
+                                You will be redirected to Stripe to complete the payment.
+                                Your renewal will be activated immediately after successful payment.
+                                <br><br>
+                                <strong>Test Card:</strong> 4242 4242 4242 4242 | 
+                                <strong>Exp:</strong> 12/34 | 
+                                <strong>CVC:</strong> 123
+                            </small>
+                        </div>
+
+                        <!-- Cash/Bank Info for Renewal -->
+                        <div *ngIf="renewMembershipForm.get('paymentMethod')?.value === 'Cash' || renewMembershipForm.get('paymentMethod')?.value === 'Bank Transfer'"
+                            class="alert alert-info">
+                            <small>
+                                <i class="fas fa-clock me-1"></i>
+                                Your renewal request will be pending admin approval.
+                                Your current membership remains active during this process.
+                            </small>
                         </div>
                     </div>
                 </div>
 
                 <div class="d-flex gap-2">
-                    <button type="submit" class="btn btn-primary" [disabled]="renewMembershipForm.invalid">
-                        Renew Now
+                    <button type="submit" class="btn btn-primary"
+                        [disabled]="renewMembershipForm.invalid">
+                        <i class="fas fa-check me-1"></i>
+                        {{ renewMembershipForm.get('paymentMethod')?.value === 'Card' ? 'Pay with Stripe' : 'Submit Renewal Request' }}
                     </button>
-                    <button type="button" class="btn btn-danger" (click)="cancelRenew()">
-                        Cancel
+                    <button type="button" class="btn btn-outline-secondary" (click)="cancelRenew()">
+                        <i class="fas fa-times me-1"></i> Cancel
                     </button>
+                </div>
+
+                <!-- Debug info (remove in production) -->
+                <div class="mt-3 p-2 bg-light rounded" *ngIf="false"> <!-- Set to false to hide in production -->
+                    <small class="text-muted">
+                        <strong>Debug Info:</strong><br>
+                        Form Valid: {{ renewMembershipForm.valid }}<br>
+                        Payment Method: {{ renewMembershipForm.get('paymentMethod')?.value || 'Not selected' }}<br>
+                        Membership ID: {{ renewMembershipForm.get('membershipId')?.value }}<br>
+                        Member ID: {{ renewMembershipForm.get('memberId')?.value }}
+                    </small>
                 </div>
             </form>
         </div>
     </div>
 
-    <form [formGroup]="purchasePlanForm" (ngSubmit)="purchaseMembership()" class="purchase-form mt-3">
-        <div class="form-group mb-3">
-            <label class="form-label">Select Membership Plan</label>
+    <!-- New Membership Purchase Form -->
+    <div class="purchase-section mt-5">
+        <h5 class="mb-3">Purchase New Membership</h5>
+        
+        <form [formGroup]="purchasePlanForm" (ngSubmit)="purchaseMembership()" class="purchase-form">
+            <div class="form-group mb-3">
+                <label class="form-label">Select Membership Plan</label>
 
-            <div class="row">
-                <div class="col-md-6 mb-3" *ngFor="let plan of plansList">
-                    <div class="card plan-card" [class.selected]="selectedPlanId === plan.id"
-                        (click)="selectPlan(plan.id)">
-                        <div class="card-body">
-                            <h5 class="card-title">{{ plan.name }}</h5>
-                            <h4 class="text-primary">Price : {{ plan.price }}</h4>
-                            <p class="text-muted">{{ plan.duration }} Month{{ plan.duration > 1 ? 's' : '' }}</p>
-                            <p class="card-text">{{ plan.description }}</p>
-                            <div class="features">
-                                <small class="text-muted">{{ plan.features }}</small>
+                <div class="row">
+                    <div class="col-md-6 mb-3" *ngFor="let plan of plansList">
+                        <div class="card plan-card" [class.selected]="selectedPlanId === plan.id"
+                            (click)="selectPlan(plan.id)">
+                            <div class="card-body">
+                                <h5 class="card-title">{{ plan.name }}</h5>
+                                <h4 class="text-primary">${{ plan.price }}</h4>
+                                <p class="text-muted">{{ plan.duration }} Month{{ plan.duration > 1 ? 's' : '' }}</p>
+                                <p class="card-text">{{ plan.description }}</p>
+                                <div class="features">
+                                    <small class="text-muted">{{ plan.features }}</small>
+                                </div>
+                            </div>
+                            <div class="card-footer bg-transparent">
+                                <div class="form-check">
+                                    <input class="form-check-input" type="radio" [checked]="selectedPlanId === plan.id"
+                                        [value]="plan.id">
+                                    <label class="form-check-label">
+                                        Select Plan
+                                    </label>
+                                </div>
                             </div>
                         </div>
-                        <div class="card-footer bg-transparent">
-                            <div class="form-check">
-                                <input class="form-check-input" type="radio" [checked]="selectedPlanId === plan.id"
-                                    [value]="plan.id">
-                                <label class="form-check-label">
-                                    Select Plan
-                                </label>
-                            </div>
+                    </div>
+                </div>
+
+                <input type="hidden" formControlName="planId">
+            </div>
+
+            <!-- Payment Method Section -->
+            <div class="form-group mb-3" *ngIf="selectedPlanId">
+                <label class="form-label">Payment Method *</label>
+                <div class="mb-3">
+                    <div class="form-check">
+                        <input class="form-check-input" type="radio" id="paymentCard" [value]="'Card'"
+                            (click)="onPaymentMethodChange('Card')" [checked]="selectedPaymentMethod === 'Card'">
+                        <label class="form-check-label" for="paymentCard">
+                            <i class="fas fa-credit-card me-1"></i> Credit/Debit Card (Stripe)
+                        </label>
+                    </div>
+                    <div class="form-check">
+                        <input class="form-check-input" type="radio" id="paymentCash" [value]="'Cash'"
+                            (click)="onPaymentMethodChange('Cash')" [checked]="selectedPaymentMethod === 'Cash'">
+                        <label class="form-check-label" for="paymentCash">
+                            <i class="fas fa-money-bill me-1"></i> Cash Payment
+                        </label>
+                    </div>
+                    <div class="form-check">
+                        <input class="form-check-input" type="radio" id="paymentBank" [value]="'Bank Transfer'"
+                            (click)="onPaymentMethodChange('Bank Transfer')"
+                            [checked]="selectedPaymentMethod === 'Bank Transfer'">
+                        <label class="form-check-label" for="paymentBank">
+                            <i class="fas fa-university me-1"></i> Bank Transfer
+                        </label>
+                    </div>
+                </div>
+
+                <!-- Stripe Payment Section -->
+                <div class="card mt-3" *ngIf="selectedPaymentMethod === 'Card'">
+                    <div class="card-body">
+                        <h6 class="card-title">💳 Credit/Debit Card Payment</h6>
+                        <p class="text-muted">Secure payment processed by Stripe</p>
+
+                        <!-- Stripe Payment Button -->
+                        <button type="button" class="btn btn-success" (click)="processStripePayment()"
+                            [disabled]="!selectedPlanId">
+                            <i class="fas fa-lock me-1"></i> Pay with Stripe - ${{ getSelectedPlanPrice() }}
+                        </button>
+
+                        <!-- Test Card Info -->
+                        <div class="mt-2">
+                            <small class="text-muted">
+                                <strong>Test Card:</strong> 4242 4242 4242 4242 | 
+                                <strong>Exp:</strong> 12/34 | 
+                                <strong>CVC:</strong> 123
+                            </small>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Bank Transfer Details -->
+                <div class="card mt-3" *ngIf="selectedPaymentMethod === 'Bank Transfer'">
+                    <div class="card-body">
+                        <h6 class="card-title">Bank Transfer Details</h6>
+                        <div class="bank-details">
+                            <p class="mb-1"><strong>Account Holder:</strong> {{ bankAccountDetails?.accountHolder || 'N/A' }}</p>
+                            <p class="mb-1"><strong>Account Number:</strong> {{ bankAccountDetails?.accountNumber || 'N/A' }}</p>
+                            <p class="mb-1"><strong>Bank Name:</strong> {{ bankAccountDetails?.bankName || 'N/A' }}</p>
+                            <p class="mb-1"><strong>Branch Code:</strong> {{ bankAccountDetails?.branchCode || 'N/A' }}</p>
+                            <p class="mb-1"><strong>IBAN:</strong> {{ bankAccountDetails?.iban || 'N/A' }}</p>
+                            <p class="mb-0"><strong>SWIFT Code:</strong> {{ bankAccountDetails?.swiftCode || 'N/A' }}</p>
+                        </div>
+                        <div class="alert alert-info mt-2">
+                            <small>
+                                <i class="fas fa-info-circle me-1"></i>
+                                Please include your membership ID in the transfer reference
+                            </small>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Cash Payment Info -->
+                <div class="card mt-3" *ngIf="selectedPaymentMethod === 'Cash'">
+                    <div class="card-body">
+                        <h6 class="card-title">Cash Payment</h6>
+                        <p class="text-muted">Visit our facility to make cash payment</p>
+                        <div class="alert alert-info">
+                            <small>
+                                <i class="fas fa-info-circle me-1"></i>
+                                Please bring your membership details when making payment
+                            </small>
                         </div>
                     </div>
                 </div>
             </div>
 
-            <input type="hidden" formControlName="planId">
-        </div>
-
-        <!-- Payment Method Section -->
-        <div class="form-group mb-3" *ngIf="selectedPlanId">
-            <label class="form-label">Payment Method *</label>
-            <div class="mb-3">
-                <div class="form-check">
-                    <input class="form-check-input" type="radio" id="paymentCard" [value]="'Card'"
-                        (click)="onPaymentMethodChange('Card')" [checked]="selectedPaymentMethod === 'Card'">
-                    <label class="form-check-label" for="paymentCard">Manual Card (Demo)</label>
-                </div>
-                <div class="form-check">
-                    <input class="form-check-input" type="radio" id="paymentStripe" [value]="'Card'"
-                        (click)="onPaymentMethodChange('Card')" [checked]="selectedPaymentMethod === 'Card'">
-                    <label class="form-check-label" for="paymentStripe">💳 Credit/Debit Card (Stripe)</label>
-                </div>
-                <div class="form-check">
-                    <input class="form-check-input" type="radio" id="paymentCash" [value]="'Cash'"
-                        (click)="onPaymentMethodChange('Cash')" [checked]="selectedPaymentMethod === 'Cash'">
-                    <label class="form-check-label" for="paymentCash">Cash Payment</label>
-                </div>
-                <div class="form-check">
-                    <input class="form-check-input" type="radio" id="paymentBank" [value]="'Bank Transfer'"
-                        (click)="onPaymentMethodChange('Bank Transfer')"
-                        [checked]="selectedPaymentMethod === 'Bank Transfer'">
-                    <label class="form-check-label" for="paymentBank">Bank Transfer</label>
-                </div>
-            </div>
-
-            <!-- Stripe Payment Section -->
-            <div class="card mt-3" *ngIf="selectedPaymentMethod === 'Card'">
-                <div class="card-body">
-                    <h6 class="card-title">💳 Credit/Debit Card Payment</h6>
-                    <p class="text-muted">Secure payment processed by Stripe</p>
-
-                    <!-- Stripe Payment Button -->
-                    <button type="button" class="btn btn-success" (click)="processStripePayment()"
-                        [disabled]="!selectedPlanId">
-                        Pay with Stripe
-                    </button>
-
-                    <!-- Test Card Info -->
-                    <div class="mt-2">
-                        <small class="text-muted">
-                            <strong>Test Card:</strong> 4242 4242 4242 4242 | <strong>Exp:</strong> 12/34 | <strong>CVC:</strong> 123
-                        </small>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Bank Transfer Details -->
-            <div class="card mt-3" *ngIf="selectedPaymentMethod === 'Bank Transfer'">
-                <div class="card-body">
-                    <h6 class="card-title">Bank Transfer Details</h6>
-                    <div class="bank-details">
-                        <p><strong>Account Holder:</strong> {{ bankAccountDetails?.accountHolder }}</p>
-                        <p><strong>Account Number:</strong> {{ bankAccountDetails?.accountNumber }}</p>
-                        <p><strong>Bank Name:</strong> {{ bankAccountDetails?.bankName }}</p>
-                        <p><strong>Branch Code:</strong> {{ bankAccountDetails?.branchCode }}</p>
-                        <p><strong>IBAN:</strong> {{ bankAccountDetails?.iban }}</p>
-                        <p><strong>SWIFT Code:</strong> {{ bankAccountDetails?.swiftCode }}</p>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Cash Payment Info -->
-            <div class="card mt-3" *ngIf="selectedPaymentMethod === 'Cash'">
-                <div class="card-body">
-                    <h6 class="card-title">Cash Payment</h6>
-                    <p class="text-muted">Visit our facility to make cash payment</p>
-                </div>
-            </div>
-        </div>
-
-        <!-- Regular Submit Button (for non-Stripe payments) -->
-        <button type="submit" class="btn btn-primary" 
+            <!-- Regular Submit Button (for non-Stripe payments) -->
+            <button type="submit" class="btn btn-primary"
                 [disabled]="!selectedPlanId || !selectedPaymentMethod || selectedPaymentMethod === 'Card'"
                 *ngIf="selectedPaymentMethod !== 'Card'">
-            {{ selectedPaymentMethod === 'Card' ? 'Pay Now' : 'Submit Request' }}
-        </button>
-    </form>
+                <i class="fas fa-paper-plane me-1"></i>
+                {{ selectedPaymentMethod === 'Card' ? 'Pay Now' : 'Submit Request' }}
+            </button>
+        </form>
+    </div>
 </div>
 
-<!-- Admin section remains exactly the same -->
+<!-- Admin section -->
 <div class="p-3" *ngIf="loggedInUser?.role === 'Admin'">
     <h1>Admin Panel - Payment Management</h1>
 
@@ -236,6 +340,7 @@
                             <th>Plan</th>
                             <th>Amount</th>
                             <th>Payment Method</th>
+                            <th>Type</th>
                             <th>Date</th>
                             <th>Actions</th>
                         </tr>
@@ -246,6 +351,11 @@
                             <td>{{ payment.membershipPlan?.name }}</td>
                             <td>${{ payment.amount }}</td>
                             <td>{{ payment.paymentMethod }}</td>
+                            <td>
+                                <span class="badge" [class.bg-info]="payment.paymentType === 'Purchase'" [class.bg-warning]="payment.paymentType === 'Renewal'">
+                                    {{ payment.paymentType }}
+                                </span>
+                            </td>
                             <td>{{ payment.paymentDate | date:'medium' }}</td>
                             <td>
                                 <button class="btn btn-success btn-sm me-2"
@@ -357,7 +467,7 @@
                                 (click)="updatePlan(plan.id, plan)">
                                 <div class="card-body">
                                     <h6 class="card-title">{{ plan.name }}</h6>
-                                    <p class="card-text mb-1"><strong>Price:</strong> {{ plan.price }}</p>
+                                    <p class="card-text mb-1"><strong>Price:</strong> ${{ plan.price }}</p>
                                     <p class="card-text mb-1"><strong>Duration:</strong> {{ plan.duration }} months</p>
                                     <p class="card-text mb-1"><strong>Description:</strong> {{ plan.description }}</p>
                                     <p class="card-text mb-0"><strong>Features:</strong> {{ plan.features }}</p>

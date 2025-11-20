@@ -5,7 +5,7 @@
     font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
   }
   
-  // Header Styles
+  
   .header {
     display: flex;
     justify-content: space-between;
@@ -32,7 +32,7 @@
     }
   }
   
-  // Trainer Section Styles
+  
   .trainer-section {
     background: #f8f9fa;
     padding: 25px;
@@ -147,7 +147,7 @@
     }
   }
   
-  // Plans Section Styles
+  
   .plans-section {
     h3 {
       color: #2c3e50;
@@ -313,7 +313,7 @@
     }
   }
   
-  // Modal Styles - Updated to match workout styling
+  
   .modal-backdrop {
     position: fixed;
     top: 0;
@@ -459,7 +459,7 @@
     }
   }
   
-  // Responsive Design
+  
   @media (max-width: 768px) {
     .diet-plans-container {
       padding: 15px;
@@ -509,7 +509,7 @@
     }
   }
   
-  // Badge Colors
+  
   .badge {
     &.bg-success { background: linear-gradient(135deg, #28a745 0%, #20c997 100%) !important; }
     &.bg-primary { background: linear-gradient(135deg, #007bff 0%, #0056b3 100%) !important; }
@@ -517,7 +517,7 @@
     &.bg-danger { background: linear-gradient(135deg, #dc3545 0%, #c82333 100%) !important; }
   }
   
-  // Animations
+  
   @keyframes fadeInUp {
     from {
       opacity: 0;

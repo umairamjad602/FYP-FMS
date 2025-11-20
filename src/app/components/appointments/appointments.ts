@@ -4,6 +4,7 @@ import { CommonModule } from '@angular/common';
 import { AppointmentService } from '../../services/appointments/appointment-service';
 import { TrainerService } from '../trainer/trainer-service';
 import { Auth } from '../../auth/services/auth';
+import { loadStripe } from '@stripe/stripe-js';
 
 @Component({
   selector: 'app-appointments',
@@ -12,12 +13,12 @@ import { Auth } from '../../auth/services/auth';
   styleUrl: './appointments.scss'
 })
 export class Appointments implements OnInit {
-  // Forms
+  
   bookTrainerForm: FormGroup;
   bookClassForm: FormGroup;
   createClassForm: FormGroup;
 
-  // Data arrays
+  
   upcomingClasses: any = [];
   availableTrainers: any = [];
   memberAppointments: any = [];
@@ -25,14 +26,18 @@ export class Appointments implements OnInit {
   allTrainers: any = [];
   public userData: any = [];
   selectedClass: any = null;
+  pendingPayments: any[] = [];
 
-  // UI states
+  
   public activeTab: string = 'book-trainer';
   isLoading: boolean = false;
   successMessage: string = '';
   errorMessage: string = '';
   public userId: number;
   public userRole: string;
+  selectedAppointmentForPayment: any;
+  selectedPaymentMethod: string;
+  showPaymentModal: boolean;
 
   constructor(
     private fb: FormBuilder,
@@ -58,6 +63,8 @@ export class Appointments implements OnInit {
       this.activeTab = 'create-class';
     } else if (this.userRole === 'Member') {
       this.activeTab = 'book-trainer';
+    } else if (this.userRole === 'Admin') {
+      this.activeTab = 'pending-payments';
     }
     console.log('User role:', this.userRole, 'Active tab:', this.activeTab);
   }
@@ -86,7 +93,7 @@ export class Appointments implements OnInit {
     }
   }
 
-  // FORM CREATION
+  
   private createBookTrainerForm(): FormGroup {
     return this.fb.group({
       memberId: ['', [Validators.required]],
@@ -120,13 +127,13 @@ export class Appointments implements OnInit {
     this.loadUpcomingClasses();
     this.loadAllFitnessClasses();
     this.loadAllTrainers();
-    
+
     if (this.userRole === 'Member') {
       this.loadMemberAppointments();
     }
   }
 
-  // FORM LISTENERS
+  
   private setupFormListeners(): void {
     this.bookTrainerForm.get('appointmentDate')?.valueChanges.subscribe(() => {
       this.onDateTimeChange();
@@ -137,13 +144,16 @@ export class Appointments implements OnInit {
     });
   }
 
-  // UI MANAGEMENT
+  
   setActiveTab(tab: string): void {
     this.activeTab = tab;
     this.clearMessages();
 
     if (tab === 'my-appointments' && this.userRole === 'Member') {
       this.loadMemberAppointments();
+    }
+    if (tab === 'pending-payments' && this.userRole === 'Admin') {
+      this.loadPendingPayments();
     }
   }
 
@@ -152,7 +162,6 @@ export class Appointments implements OnInit {
     this.errorMessage = '';
   }
 
-  // MAIN ACTIONS
   async onBookTrainer() {
     if (this.bookTrainerForm.invalid) {
       this.markFormGroupTouched(this.bookTrainerForm);
@@ -165,7 +174,7 @@ export class Appointments implements OnInit {
 
     try {
       const formValue = this.bookTrainerForm.value;
-      
+
       const payload = {
         memberId: Number(this.userId),
         trainerId: Number(formValue.trainerId),
@@ -180,6 +189,12 @@ export class Appointments implements OnInit {
       this.successMessage = result.message || 'Trainer booked successfully!';
       this.bookTrainerForm.reset({ duration: 60 });
       this.updateFormsWithUserId();
+
+      
+      if (result.appointmentId) {
+        await this.showPaymentOptions(result.appointmentId, 'trainer');
+      }
+
       await this.loadMemberAppointments();
     } catch (error: any) {
       console.error('Booking error:', error);
@@ -217,6 +232,12 @@ export class Appointments implements OnInit {
       this.successMessage = result.message || 'Class booked successfully!';
       this.bookClassForm.reset();
       this.selectedClass = null;
+
+      
+      if (result.appointmentId) {
+        await this.showPaymentOptions(result.appointmentId, 'class');
+      }
+
       await this.loadUpcomingClasses();
       await this.loadMemberAppointments();
     } catch (error: any) {
@@ -239,7 +260,7 @@ export class Appointments implements OnInit {
 
     try {
       const formValue = this.createClassForm.value;
-      
+
       const payload = {
         className: formValue.className,
         trainerId: Number(this.userId),
@@ -275,7 +296,7 @@ export class Appointments implements OnInit {
     }
   }
 
-  // DATA LOADING
+  
   private async loadUpcomingClasses() {
     try {
       this.upcomingClasses = await this.appointmentService.getUpcomingClasses();
@@ -313,7 +334,7 @@ export class Appointments implements OnInit {
     try {
       const formattedDate = this.formatDateForBackend(date);
       const formattedTime = this.formatTimeForBackend(time);
-      
+
       this.availableTrainers = await this.appointmentService.getAvailableTrainers(formattedDate, formattedTime);
     } catch (error) {
       console.error('Failed to load available trainers:', error);
@@ -334,7 +355,7 @@ export class Appointments implements OnInit {
     }
   }
 
-  // EVENT HANDLERS
+  
   private onDateTimeChange(): void {
     if (this.bookTrainerForm.get('appointmentDate')?.value &&
       this.bookTrainerForm.get('appointmentTime')?.value) {
@@ -342,7 +363,7 @@ export class Appointments implements OnInit {
     }
   }
 
-  // CLASS SELECTION HANDLER
+  
   onClassSelected(event: any) {
     const classId = event.target.value;
     this.selectedClass = this.upcomingClasses.find((c: any) => c.id == classId);
@@ -351,22 +372,22 @@ export class Appointments implements OnInit {
     console.log('Selected class:', this.selectedClass);
   }
 
-  // FORMATTING HELPERS
+  
   private formatDateForBackend(dateString: string): string {
     if (!dateString) return '';
-    
+
     try {
       // If it's already in YYYY-MM-DD format, return as is
       if (typeof dateString === 'string' && dateString.match(/^\d{4}-\d{2}-\d{2}$/)) {
         return dateString;
       }
+
       
-      // Convert to YYYY-MM-DD format for DateOnly
       const date = new Date(dateString);
       const year = date.getFullYear();
       const month = (date.getMonth() + 1).toString().padStart(2, '0');
       const day = date.getDate().toString().padStart(2, '0');
-      
+
       return `${year}-${month}-${day}`;
     } catch (error) {
       console.error('Error formatting date:', error);
@@ -376,19 +397,19 @@ export class Appointments implements OnInit {
 
   private formatTimeForBackend(timeString: string): string {
     if (!timeString) return '';
-    
+
     try {
       // If it's already in HH:MM format, return as is
       if (typeof timeString === 'string' && timeString.match(/^\d{2}:\d{2}$/)) {
         return timeString;
       }
+
       
-      // Convert to HH:MM format for TimeOnly
       if (timeString.includes(':')) {
         const [hours, minutes] = timeString.split(':');
         return `${hours.padStart(2, '0')}:${minutes.padStart(2, '0')}`;
       }
-      
+
       return timeString;
     } catch (error) {
       console.error('Error formatting time:', error);
@@ -424,4 +445,192 @@ export class Appointments implements OnInit {
       default: return 'badge bg-secondary';
     }
   }
+
+  
+  onPaymentMethodChange(method: string) {
+    this.selectedPaymentMethod = method;
+  }
+
+  
+  async processPayment() {
+    if (!this.selectedPaymentMethod || !this.selectedAppointmentForPayment) {
+      this.errorMessage = 'Please select a payment method';
+      return;
+    }
+
+    this.isLoading = true;
+    this.clearMessages();
+
+    try {
+      if (this.selectedPaymentMethod === 'Card') {
+        
+        if (this.selectedAppointmentForPayment.type === 'trainer') {
+          const sessionResult = await this.appointmentService.createTrainerPaymentSession(
+            this.userId,
+            this.selectedAppointmentForPayment.id
+          );
+
+          
+          await this.redirectToStripe(sessionResult.sessionId);
+        } else {
+          const sessionResult = await this.appointmentService.createClassPaymentSession(
+            this.userId,
+            this.selectedAppointmentForPayment.id
+          );
+
+          await this.redirectToStripe(sessionResult.sessionId);
+        }
+      } else {
+        
+        const result = await this.appointmentService.processAppointmentPayment({
+          memberId: this.userId,
+          appointmentId: this.selectedAppointmentForPayment.id,
+          paymentMethod: this.selectedPaymentMethod
+        });
+
+        this.successMessage = result.message;
+        this.closePaymentModal();
+        await this.loadMemberAppointments();
+      }
+    } catch (error: any) {
+      console.error('Payment error:', error);
+      this.errorMessage = error.error?.message || 'Payment failed';
+    } finally {
+      this.isLoading = false;
+    }
+  }
+
+  
+  private async redirectToStripe(sessionId: string) {
+    const stripe = await loadStripe('pk_test_51SU39kK7gKal9maapfl9r23q6Y5XnUO6lkgglPEMfRRDmTYu4PTHfSmdMqHqIP75iogWeX2qm5TCmEQxm34iQcrt00PDrMzH7c');
+
+    if (!stripe) {
+      this.errorMessage = 'Failed to initialize payment system';
+      return;
+    }
+
+    const { error } = await stripe.redirectToCheckout({ sessionId });
+
+    if (error) {
+      this.errorMessage = error.message || 'Payment redirect failed';
+    }
+  }
+
+  
+  closePaymentModal() {
+    this.showPaymentModal = false;
+    this.selectedPaymentMethod = '';
+    this.selectedAppointmentForPayment = null;
+  }
+
+  // Handle payment confirmation after redirect
+  public async handlePaymentRedirect() {
+    const urlParams = new URLSearchParams(window.location.search);
+    const sessionId = urlParams.get('session_id');
+
+    if (sessionId) {
+      try {
+        const result = await this.appointmentService.confirmAppointmentPayment(sessionId);
+        this.successMessage = result.message;
+        await this.loadMemberAppointments();
+      } catch (error: any) {
+        this.errorMessage = 'Payment confirmation failed';
+      }
+    }
+  }
+
+
+  async loadPendingPayments() {
+    if (this.userRole !== 'Admin') return;
+
+    try {
+      const resp:any = await this.appointmentService.getPendingPayments();
+      this.pendingPayments = resp;
+      console.log('Pending payments loaded:', this.pendingPayments);
+    } catch (error: any) {
+      console.error('Failed to load pending payments:', error);
+      this.errorMessage = error.error?.message || 'Failed to load pending payments';
+    }
+  }
+
+  
+  async approvePayment(paymentId: number) {
+    if (!confirm('Are you sure you want to approve this payment?')) return;
+
+    try {
+      await this.appointmentService.updatePaymentStatus({
+        paymentId: paymentId,
+        newStatus: 'Completed'
+      });
+
+      this.successMessage = 'Payment approved successfully!';
+      await this.loadPendingPayments();
+    } catch (error: any) {
+      console.error('Failed to approve payment:', error);
+      this.errorMessage = error.error?.message || 'Failed to approve payment';
+    }
+  }
+
+  
+  async rejectPayment(paymentId: number) {
+    if (!confirm('Are you sure you want to reject this payment?')) return;
+
+    try {
+      await this.appointmentService.updatePaymentStatus({
+        paymentId: paymentId,
+        newStatus: 'Cancelled'
+      });
+
+      this.successMessage = 'Payment rejected successfully!';
+      await this.loadPendingPayments();
+    } catch (error: any) {
+      console.error('Failed to reject payment:', error);
+      this.errorMessage = error.error?.message || 'Failed to reject payment';
+    }
+  }
+
+  
+  getPaymentStatusBadgeClass(status: string): string {
+    switch (status?.toLowerCase()) {
+      case 'pending': return 'badge bg-warning';
+      case 'completed': return 'badge bg-success';
+      case 'cancelled': return 'badge bg-danger';
+      default: return 'badge bg-secondary';
+    }
+  }
+
+
+  
+getAppointmentPrice(): number {
+  if (!this.selectedAppointmentForPayment) return 0;
+  
+  if (this.selectedAppointmentForPayment.type === 'trainer') {
+      
+      const formValue = this.bookTrainerForm.value;
+      const duration = formValue.duration || 60;
+      
+      const baseRate = 50; 
+      const additionalRate = 10; 
+      
+      const hours = Math.floor(duration / 60);
+      const additionalHalfHours = Math.ceil((duration % 60) / 30);
+      
+      return (hours * baseRate) + (additionalHalfHours * additionalRate);
+  } else {
+      
+      return 25;
+  }
+}
+
+
+private async showPaymentOptions(appointmentId: number, type: 'trainer' | 'class') {
+  const price = this.getAppointmentPrice();
+  this.selectedAppointmentForPayment = { 
+      id: appointmentId, 
+      type: type,
+      price: price
+  };
+  this.showPaymentModal = true;
+}
+
 }

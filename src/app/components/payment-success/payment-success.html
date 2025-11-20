@@ -1,0 +1,157 @@
+<div class="container-fluid py-5 bg-light min-vh-100">
+    <div class="container">
+      <div class="row justify-content-center">
+        <div class="col-md-8 col-lg-6">
+          
+          <!-- Loading State -->
+          <div *ngIf="loading" class="text-center">
+            <div class="card shadow-sm border-0">
+              <div class="card-body py-5">
+                <div class="spinner-border text-primary mb-3" style="width: 3rem; height: 3rem;" role="status">
+                  <span class="visually-hidden">Loading...</span>
+                </div>
+                <h4 class="text-primary">Processing Your Payment</h4>
+                <p class="text-muted">Please wait while we confirm your payment...</p>
+              </div>
+            </div>
+          </div>
+  
+          <!-- Success State -->
+          <div *ngIf="!loading && success" class="text-center">
+            <div class="card shadow-sm border-0">
+              <div class="card-body py-5">
+                <!-- Success Icon -->
+                <div class="mb-4">
+                  <div class="bg-success rounded-circle d-inline-flex align-items-center justify-content-center" 
+                       style="width: 80px; height: 80px;">
+                    <i class="fas {{ getIconClass() }} text-white" style="font-size: 2.5rem;"></i>
+                  </div>
+                </div>
+  
+                <!-- Success Message -->
+                <h2 class="text-success mb-3">{{ getSuccessTitle() }}</h2>
+                <p class="lead text-muted mb-4">{{ successMessage || getSuccessMessage() }}</p>
+  
+                <!-- Payment Details Card -->
+                <div *ngIf="paymentDetails" class="card bg-light border-0 mb-4">
+                  <div class="card-body">
+                    <h5 class="card-title text-primary mb-3">{{ getDetailsTitle() }}</h5>
+                    <div class="row text-start">
+                      
+                      <!-- Subscription/Renewal Details -->
+                      <div *ngIf="paymentType === 'subscription' || paymentType === 'renewal'" class="col-12">
+                        <div class="row">
+                          <div class="col-md-6">
+                            <p class="mb-2"><strong>Membership ID:</strong></p>
+                            <p class="mb-2"><strong>Status:</strong></p>
+                            <p class="mb-0"><strong>End Date:</strong></p>
+                          </div>
+                          <div class="col-md-6">
+                            <p class="mb-2 text-muted">#{{ paymentDetails.membershipId || paymentDetails.id }}</p>
+                            <p class="mb-2">
+                              <span class="badge bg-success">{{ paymentDetails.status }}</span>
+                            </p>
+                            <p class="mb-0 text-muted">{{ formatDate(paymentDetails.endDate) }}</p>
+                          </div>
+                        </div>
+                      </div>
+                      
+                      <!-- Appointment Details -->
+                      <div *ngIf="paymentType === 'appointment'" class="col-12">
+                        <div class="row">
+                          <div class="col-md-6">
+                            <p class="mb-2"><strong>Appointment ID:</strong></p>
+                            <p class="mb-2"><strong>Status:</strong></p>
+                            <p class="mb-0"><strong>Payment Status:</strong></p>
+                          </div>
+                          <div class="col-md-6">
+                            <p class="mb-2 text-muted">#{{ paymentDetails.appointmentId }}</p>
+                            <p class="mb-2">
+                              <span class="badge bg-primary">{{ paymentDetails.status }}</span>
+                            </p>
+                            <p class="mb-0">
+                              <span class="badge bg-success">{{ paymentDetails.paymentStatus || 'Completed' }}</span>
+                            </p>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+  
+                <!-- Action Buttons -->
+                <div class="d-grid gap-2 d-md-flex justify-content-center">
+                  <button class="btn btn-primary btn-lg px-4" (click)="getPrimaryAction()">
+                    <i class="fas {{ getIconClass() }} me-2"></i>{{ getPrimaryActionText() }}
+                  </button>
+                  <button class="btn btn-outline-secondary btn-lg px-4" (click)="goToDashboard()">
+                    <i class="fas fa-home me-2"></i>Go to Dashboard
+                  </button>
+                </div>
+  
+                <!-- Additional Info -->
+                <div class="mt-4">
+                  <small class="text-muted">
+                    A confirmation email has been sent to your registered email address.
+                  </small>
+                </div>
+              </div>
+            </div>
+          </div>
+  
+          <!-- Error State -->
+          <div *ngIf="!loading && error" class="text-center">
+            <div class="card shadow-sm border-0">
+              <div class="card-body py-5">
+                <!-- Error Icon -->
+                <div class="mb-4">
+                  <div class="bg-danger rounded-circle d-inline-flex align-items-center justify-content-center" 
+                       style="width: 80px; height: 80px;">
+                    <i class="fas fa-times text-white" style="font-size: 2.5rem;"></i>
+                  </div>
+                </div>
+  
+                <!-- Error Message -->
+                <h2 class="text-danger mb-3">Payment Failed</h2>
+                <p class="lead text-muted mb-4">{{ errorMessage }}</p>
+  
+                <!-- Troubleshooting Tips -->
+                <div class="card bg-light border-0 mb-4">
+                  <div class="card-body text-start">
+                    <h6 class="text-primary mb-3">What you can do:</h6>
+                    <ul class="list-unstyled mb-0">
+                      <li class="mb-2">
+                        <i class="fas fa-redo-alt text-primary me-2"></i>
+                        Try the payment again
+                      </li>
+                      <li class="mb-2">
+                        <i class="fas fa-credit-card text-primary me-2"></i>
+                        Check your card details
+                      </li>
+                      <li class="mb-0">
+                        <i class="fas fa-headset text-primary me-2"></i>
+                        Contact support if the issue persists
+                      </li>
+                    </ul>
+                  </div>
+                </div>
+  
+                <!-- Action Buttons -->
+                <div class="d-grid gap-2 d-md-flex justify-content-center">
+                  <button class="btn btn-primary btn-lg px-4" 
+                          (click)="paymentType === 'appointment' ? goToAppointments() : goToSubscriptions()">
+                    <i class="fas fa-arrow-left me-2"></i>
+                    Back to {{ paymentType === 'appointment' ? 'Appointments' : 'Plans' }}
+                  </button>
+                  <button class="btn btn-outline-secondary btn-lg px-4" (click)="goToDashboard()">
+                    <i class="fas fa-home me-2"></i>Go to Dashboard
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+  
+        </div>
+      </div>
+    </div>
+  </div>

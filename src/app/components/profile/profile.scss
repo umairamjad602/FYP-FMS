@@ -4,7 +4,7 @@
     margin: 0 auto;
 }
 
-// Profile Card Styles
+
 .profile-card {
     border: none;
     border-radius: 16px;
@@ -36,7 +36,7 @@
     }
 }
 
-// Profile Image
+
 .profile-image-container {
     .profile-image {
         width: 120px;
@@ -68,7 +68,7 @@
     border-radius: 20px;
 }
 
-// Profile Details
+
 .profile-details {
     .detail-section {
         margin-bottom: 2rem;
@@ -130,7 +130,7 @@
     }
 }
 
-// Profile Actions
+
 .profile-actions {
     .btn {
         border-radius: 8px;
@@ -149,7 +149,7 @@
     }
 }
 
-// Statistics Cards
+
 .stat-card {
     border: none;
     border-radius: 12px;
@@ -187,7 +187,7 @@
     }
 }
 
-// Responsive Design
+
 @media (max-width: 768px) {
     .member-profile-section {
         padding: 15px;
@@ -223,7 +223,7 @@
     }
 }
 
-// Animation for profile image
+
 @keyframes fadeInUp {
     from {
         opacity: 0;

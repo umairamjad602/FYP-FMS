@@ -47,7 +47,7 @@ export class WorkoutPlanService extends baseAPIClass {
     return await firstValueFrom(this.httpClient.get(`${this.baseUrl}/WorkoutPlans/assignments/${workoutPlanId}`));
   }
 
-  // FIXED: Updated to use the new endpoint
+  
   public async getMembersByTrainer(trainerId: number) {
     return await firstValueFrom(this.httpClient.get(`${this.baseUrl}/WorkoutPlans/trainer/${trainerId}/members`));
   }

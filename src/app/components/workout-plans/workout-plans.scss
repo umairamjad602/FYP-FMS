@@ -4,7 +4,7 @@
     margin: 0 auto;
 }
 
-// Role Badge
+
 .role-badge {
     font-size: 0.9rem;
     padding: 0.5rem 1rem;
@@ -16,7 +16,7 @@
     }
 }
 
-// Trainer Specific Styles
+
 .workout-form-card {
     border: none;
     border-radius: 12px;
@@ -39,7 +39,7 @@
     }
 }
 
-// Member Specific Styles
+
 .assigned-workout-card {
     border: none;
     border-radius: 16px;
@@ -130,7 +130,7 @@
     }
 }
 
-// Common Styles (Keep existing styles for trainer)
+
 .exercise-form {
     border: 2px dashed #dee2e6;
     background: #f8f9fa;
@@ -307,7 +307,7 @@
     }
 }
 
-// Badge Colors
+
 .badge {
     &.bg-success { background: linear-gradient(135deg, #28a745 0%, #20c997 100%) !important; }
     &.bg-primary { background: linear-gradient(135deg, #007bff 0%, #0056b3 100%) !important; }
@@ -316,7 +316,7 @@
     &.bg-info { background: linear-gradient(135deg, #17a2b8 0%, #6f42c1 100%) !important; }
 }
 
-// Responsive Design
+
 @media (max-width: 768px) {
     .workout-management-section {
         padding: 15px;
@@ -353,7 +353,7 @@
     }
 }
 
-// Animations
+
 @keyframes fadeInUp {
     from {
         opacity: 0;

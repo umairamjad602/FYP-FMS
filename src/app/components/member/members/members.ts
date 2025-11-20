@@ -71,9 +71,6 @@ export class Members {
 
   public tabs = [
     { id: 1, title: "Member Details" },
-    { id: 2, title: "Payment History" },
-    { id: 3, title: "Assign Trianer" },
-    { id: 4, title: "Progress Tracking" }
   ]
 
   setActive(tabId: any) {
