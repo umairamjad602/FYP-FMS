@@ -1,5 +1,5 @@
 import { Component, OnInit } from '@angular/core';
-import { FormBuilder, FormGroup, Validators, ReactiveFormsModule } from '@angular/forms';
+import { FormBuilder, FormGroup, Validators, ReactiveFormsModule, FormsModule } from '@angular/forms';
 import { CommonModule } from '@angular/common';
 import { AppointmentService } from '../../services/appointments/appointment-service';
 import { TrainerService } from '../trainer/trainer-service';
@@ -8,7 +8,7 @@ import { loadStripe } from '@stripe/stripe-js';
 
 @Component({
   selector: 'app-appointments',
-  imports: [CommonModule, ReactiveFormsModule],
+  imports: [CommonModule, ReactiveFormsModule, FormsModule],
   templateUrl: './appointments.html',
   styleUrl: './appointments.scss'
 })
@@ -17,7 +17,6 @@ export class Appointments implements OnInit {
   bookTrainerForm: FormGroup;
   bookClassForm: FormGroup;
   createClassForm: FormGroup;
-
   
   upcomingClasses: any = [];
   availableTrainers: any = [];
@@ -38,6 +37,7 @@ export class Appointments implements OnInit {
   selectedAppointmentForPayment: any;
   selectedPaymentMethod: string;
   showPaymentModal: boolean;
+  appointments: any;
 
   constructor(
     private fb: FormBuilder,
@@ -52,12 +52,19 @@ export class Appointments implements OnInit {
 
   async ngOnInit() {
     await this.getProfile();
+    await this.getTrainerAppointments()
     this.setInitialTab();
     this.updateFormsWithUserId();
     this.loadInitialData();
     this.setupFormListeners();
   }
 
+  async getTrainerAppointments() {
+    const response =  await this.appointmentService.getTrainerAppointments(this.userId);
+    this.appointments = response;
+    console.log('Trainer appointments:', response);
+    
+  }
   private setInitialTab() {
     if (this.userRole === 'Trainer') {
       this.activeTab = 'create-class';
@@ -78,6 +85,24 @@ export class Appointments implements OnInit {
       if (this.userRole === 'Trainer') {
         this.createClassForm.patchValue({ trainerId: this.userId });
       }
+    }
+  }
+
+  getStatusClass(status: string): string {
+    switch (status) {
+      case 'Scheduled': return 'bg-primary';
+      case 'In Progress': return 'bg-warning text-dark';
+      case 'Completed': return 'bg-success';
+      case 'Cancelled': return 'bg-danger';
+      default: return 'bg-secondary';
+    }
+  }
+
+  getPaymentClass(paymentStatus: string): string {
+    switch (paymentStatus) {
+      case 'Completed': return 'bg-success';
+      case 'Pending': return 'bg-warning text-dark';
+      default: return 'bg-secondary';
     }
   }
 

@@ -129,3 +129,82 @@
   .bg-light {
     background-color: #f8f9fa !important;
   }
+
+  :host {
+    display: block;
+  }
+  
+  .appointment-row {
+    transition: all 0.2s ease;
+    
+    &:hover {
+      background-color: #f8f9fa;
+      transform: translateY(-1px);
+    }
+  }
+  
+  .member-info {
+    strong {
+      font-size: 0.95rem;
+    }
+    
+    small {
+      font-size: 0.8rem;
+    }
+  }
+  
+  .datetime-info {
+    strong {
+      font-size: 0.9rem;
+    }
+    
+    .text-primary {
+      font-weight: 600;
+    }
+  }
+  
+  .type-badge {
+    font-size: 0.75rem;
+  }
+  
+  .status-badge, .payment-badge {
+    font-size: 0.75rem;
+    min-width: 80px;
+  }
+  
+  .duration-badge {
+    background-color: #e9ecef;
+    padding: 4px 8px;
+    border-radius: 4px;
+    font-size: 0.85rem;
+    font-weight: 500;
+  }
+  
+  .empty-state {
+    opacity: 0.7;
+    
+    i {
+      opacity: 0.5;
+    }
+  }
+  
+  // Responsive adjustments
+  @media (max-width: 768px) {
+    .table-responsive {
+      font-size: 0.875rem;
+    }
+    
+    .member-info, .datetime-info {
+      strong {
+        font-size: 0.85rem;
+      }
+      
+      small {
+        font-size: 0.75rem;
+      }
+    }
+    
+    .badge {
+      font-size: 0.7rem;
+    }
+  }

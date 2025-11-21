@@ -57,6 +57,13 @@
                         My Appointments
                     </button>
                 </li>
+                <li class="nav-item" *ngIf="userData?.role == 'Trainer'">
+                    <button class="nav-link" [class.active]="activeTab === 'my-appointments'"
+                        (click)="setActiveTab('my-appointments')">
+                        My Appointments
+                    </button>
+                </li>
+
             </ul>
         </div>
     </div>
@@ -407,6 +414,96 @@
         </div>
     </div>
 
+    <div *ngIf="activeTab === 'my-appointments' && !isLoading && userData.role === 'Trainer'">
+        <div class="container-fluid py-4">
+            <!-- Header -->
+            <div class="row mb-4">
+              <div class="col">
+                <h2 class="mb-0">My Appointments</h2>
+                <p class="text-muted">Manage your training sessions and classes</p>
+              </div>
+            </div>
+          
+            <!-- Appointments List -->
+            <div class="row">
+              <div class="col-12">
+                <div class="card">
+                  <div class="card-body p-0">
+                    <div class="table-responsive">
+                      <table class="table table-hover mb-0">
+                        <thead class="table-light">
+                          <tr>
+                            <th>Member</th>
+                            <th>Date & Time</th>
+                            <th>Type</th>
+                            <th>Duration</th>
+                            <th>Status</th>
+                            <th>Payment</th>
+                            <th>Amount</th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          <tr *ngFor="let appointment of appointments" class="appointment-row">
+                            <td>
+                              <div class="member-info">
+                                <strong>{{ appointment.memberName }}</strong>
+                                <small class="text-muted d-block">{{ appointment.memberEmail }}</small>
+                                <small class="text-muted">{{ appointment.memberPhone }}</small>
+                              </div>
+                            </td>
+                            <td>
+                              <div class="datetime-info">
+                                <strong>{{ appointment.appointmentDate }}</strong>
+                                <div class="text-primary">{{ appointment.appointmentTime }}</div>
+                              </div>
+                            </td>
+                            <td>
+                              <span class="badge type-badge" [ngClass]="{
+                                'bg-primary': appointment.appointmentType === 'Personal Training',
+                                'bg-info': appointment.appointmentType === 'Class'
+                              }">
+                                {{ appointment.appointmentType }}
+                              </span>
+                              <div *ngIf="appointment.className" class="small text-muted">
+                                {{ appointment.className }}
+                              </div>
+                            </td>
+                            <td>
+                              <span class="duration-badge">{{ appointment.duration }} mins</span>
+                            </td>
+                            <td>
+                              <span class="badge status-badge" [ngClass]="getStatusClass(appointment.status)">
+                                {{ appointment.status }}
+                              </span>
+                            </td>
+                            <td>
+                              <span class="badge payment-badge" [ngClass]="getPaymentClass(appointment.paymentStatus)">
+                                {{ appointment.paymentStatus }}
+                              </span>
+                            </td>
+                            <td>
+                              <strong class="text-success">${{ appointment.price }}</strong>
+                            </td>
+                          </tr>
+                        </tbody>
+                      </table>
+                    </div>
+          
+                    <!-- Empty State -->
+                    <div *ngIf="appointments.length === 0" class="text-center py-5">
+                      <div class="empty-state">
+                        <i class="fas fa-calendar-times fa-3x text-muted mb-3"></i>
+                        <h5>No appointments found</h5>
+                        <p class="text-muted">No appointments match your current filters.</p>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+    </div>
+
     <!-- My Appointments Tab -->
     <div class="row" *ngIf="activeTab === 'my-appointments' && !isLoading && userData.role === 'Member'">
         <div class="col-12">
@@ -428,7 +525,7 @@
                             <thead>
                                 <tr>
                                     <th>Type</th>
-                                    <th>Details</th>
+                                    <th>Trainer</th>
                                     <th>Date & Time</th>
                                     <th>Duration</th>
                                     <th>Status</th>

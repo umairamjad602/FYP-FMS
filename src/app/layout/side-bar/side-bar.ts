@@ -34,42 +34,31 @@ export class SideBar implements OnInit {
 
       case 'Admin':
         this.sideBarItems = [
-          { name: 'Dashboard', icon: 'fa-solid fa-house', route: '/dashboard' },
           { name: 'Members', icon: 'fa-solid fa-users', route: '/members' },
           { name: 'Trainers', icon: 'fa-solid fa-user-tie', route: '/trainers' },
           { name: 'Plans', icon: 'fa-solid fa-list-check', route: '/subscriptions-plans' },
-          { name: 'Payments', icon: 'fa-solid fa-credit-card', route: '/payments' },
-          { name: 'Attendance', icon: 'fa-solid fa-clipboard-check', route: '/attendance' },
           { name: 'Appointments', icon: 'fa-solid fa-calendar-check', route: '/appointments' },
-          { name: 'Reports', icon: 'fa-solid fa-chart-line', route: '/reports' },
-          { name: 'Notifications', icon: 'fa-solid fa-bell', route: '/notifications' },
-          { name: 'Settings', icon: 'fa-solid fa-gear', route: '/settings' }
         ];
         break;
 
       case 'Trainer':
         this.sideBarItems = [
-          { name: 'Dashboard', icon: 'fa-solid fa-house', route: '/dashboard' },
           { name: 'Workout Plans', icon: 'fa-solid fa-dumbbell', route: '/workout-plans' },
           { name: 'Diet Plans', icon: 'fa-solid fa-apple-whole', route: '/diet-plans' },
           { name: 'Appointments', icon: 'fa-solid fa-calendar-check', route: '/appointments' },
-          { name: 'Attendance', icon: 'fa-solid fa-clipboard-check', route: '/attendance' },
-          { name: 'Settings', icon: 'fa-solid fa-gear', route: '/settings' }
+          { name: 'Attendance', icon: 'fa-solid fa-clipboard-check', route: '/attendance' }
         ];
         break;
 
       case 'Member':
         this.sideBarItems = [
-          { name: 'Dashboard', icon: 'fa-solid fa-house', route: '/dashboard' },
           { name: 'My Profile', icon: 'fa-solid fa-user', route: '/profile' },
           { name: 'Membership Plan', icon: 'fa-solid fa-list-check', route: '/subscriptions-plans' },
           { name: 'Workout Plan', icon: 'fa-solid fa-dumbbell', route: '/workout-plans' },
           { name: 'Diet Plan', icon: 'fa-solid fa-apple-whole', route: '/diet-plans' },
           { name: 'Progress', icon: 'fa-solid fa-chart-line', route: '/progress' },
           { name: 'Book Appointment', icon: 'fa-solid fa-calendar-plus', route: '/appointments' },
-          { name: 'Payments', icon: 'fa-solid fa-credit-card', route: '/payments' },
-          { name: 'Reviews', icon: 'fa-solid fa-star', route: '/reviews' },
-          { name: 'Settings', icon: 'fa-solid fa-gear', route: '/settings' }
+          { name: 'Reviews', icon: 'fa-solid fa-star', route: '/reviews' }
         ];
         break;
 

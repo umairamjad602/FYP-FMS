@@ -93,11 +93,17 @@
             </div>
 
             <div class="single-view-main mb-2" *ngIf="activeTabId==3">
-                Trainer’s schedule and sessions data will go here.
-            </div>
+                <div class="review-card">
+                    <h3>Member Review</h3>
 
-            <div class="single-view-main mb-2" *ngIf="activeTabId==4">
-                Performance metrics and progress details will go here.
+                    <div *ngFor="let review of trainerReviews" class="card mb-3 p-3">
+                        <p><strong>Comment : </strong> {{ review.comment }}</p>
+                        <p><strong>Rating : </strong> ⭐ {{ review.rating }}</p>
+                        <p><strong>Member ID : </strong> {{ review.memberId }}</p>
+                        <p><strong>Date : </strong> {{ review.reviewDate | date: 'medium' }}</p>
+                    </div>
+                </div>
+
             </div>
         </div>
     </div>

@@ -7,6 +7,7 @@ import { ToastrService } from 'ngx-toastr';
 import { FormsModule } from '@angular/forms';
 import { MemberService } from '../member-service';
 import { TrainerService } from '../../trainer/trainer-service';
+import { Auth } from '../../../auth/services/auth';
 
 @Component({
   selector: 'app-members',
@@ -22,16 +23,19 @@ export class Members {
   public searchText: string = '';
   public trainersList: any[] = [];
   public selectedTrainer: any;
+  user: Promise<Object>;
   constructor(
     private route: ActivatedRoute,
     private ngbModalService: NgbModal,
     private toastrService: ToastrService,
     private router: Router,
     private memberService: MemberService,
-    private trainerService: TrainerService
+    private trainerService: TrainerService,
+    private authService: Auth
   ) { }
 
   async ngOnInit() {
+    await this.loggedInUser()
     await this.getMemberListAsync();
     await this.getTrainerListAsync();
 
@@ -39,6 +43,17 @@ export class Members {
     this.getAssignedTrainer();
 
     this.setActive(1);
+  }
+
+  async loggedInUser(){
+    const user: any = await this.authService.getloggedInUserAsync();
+    this.user = user;
+    if (user.role === 'Trainer') {
+      this.router.navigate(['/workout-plans']);
+    }
+    else if (user.role === 'Member') {
+      this.router.navigate(['/profile']);
+    }
   }
 
   public applySearch() {

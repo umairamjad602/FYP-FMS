@@ -163,7 +163,7 @@ export class WorkoutPlans implements OnInit {
   async loadMyAssignedWorkout() {
     try {
       const response: any = await this.workoutPlanService.getWorkoutPlansByMember(this.userId);
-      this.myAssignedWorkout = response || []; 
+      this.myAssignedWorkout = response; 
       
       console.log('Loaded assigned workouts:', this.myAssignedWorkout);
       
@@ -510,10 +510,12 @@ getAssignedWorkoutsDetail(member: Member): string {
   }
 
   markExerciseCompleted(exerciseIndex: number) {
-    if (this.myAssignedWorkout) {
-      this.toastr.success(`Completed: ${this.myAssignedWorkout.exercises[exerciseIndex].name}`);
+    if (this.myAssignedWorkout?.length > 0) {
+      const workout = this.myAssignedWorkout[0];
+      this.toastr.success(`Completed: ${workout.exercises[exerciseIndex].name}`);
     }
   }
+  
 
   startWorkout() {
     if (this.myAssignedWorkout) {

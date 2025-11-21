@@ -46,12 +46,12 @@ export class CreateUpdateMember {
     this.memberForm = this.fb.group({
       fullName: ['', [Validators.required]],
       email: ['', [Validators.required, Validators.email]],
+      password: ['', [Validators.required]],
       userName: ['', null],
       phone: [''],
       address: [''],
       dateOfBirth: [null],
-      password: ['', [Validators.required]],
-      trainerId: ['']
+      trainerId: []
     })
     this.ready = true;
   }

@@ -22,6 +22,7 @@ export class Trainers {
   public searchText: string = '';
   public assignedMembers: any[] = [];
   public membersList: any[] = [];
+  trainerReviews: any;
 
   constructor(
     private route: ActivatedRoute,
@@ -40,8 +41,14 @@ export class Trainers {
     this.getAssignedMembers(); // filter members
     
     this.setActive(1);
+    await this.getReviewByTrainerAsync();
   }
   
+
+  public async getReviewByTrainerAsync(){
+    const response: any = await this.memberService.getReviewByTrainerAsync(this.selectedTrainer.id);
+    this.trainerReviews = response;
+  }
 
   public applySearch() {
     if (!this.searchText) {
@@ -88,8 +95,7 @@ export class Trainers {
   public tabs = [
     { id: 1, title: "Trainer Details" },
     { id: 2, title: "Assigned Members" },
-    { id: 3, title: "Schedule" },
-    { id: 4, title: "Performance" }
+    { id: 3, title: "Reviews" },
   ];
 
   setActive(tabId: any) {

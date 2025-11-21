@@ -41,4 +41,7 @@ export class MemberService extends baseAPIClass {
   public async deleteReview(id: number) {
     return await firstValueFrom(this.httpClient.delete(`${this.baseUrl}/Reviews/${id}`));
   }
+  public async getReviewByTrainerAsync(trainerId: number) {
+    return await firstValueFrom(this.httpClient.get(`${this.baseUrl}/Reviews/trainer/${trainerId}`));
+  }
 }

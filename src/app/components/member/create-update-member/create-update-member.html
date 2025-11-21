@@ -41,8 +41,8 @@
             <label class="form-label">Assign Trainer</label>
             <select class="form-select" aria-label="select trainer" formControlName="trainerId">
                 <option value=""[selected]>Select Trainer</option>
-                <option *ngFor="let trainer of trainersList" [value]="trainer.id">
-                    {{ trainer.fullName }}
+                <option *ngFor="let trainer of trainersList" [value]="trainer?.id">
+                    {{ trainer?.fullName }}
                 </option>
               </select>
         </div>

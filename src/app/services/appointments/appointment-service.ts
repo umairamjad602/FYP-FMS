@@ -13,7 +13,6 @@ export class AppointmentService extends baseAPIClass {
     super();
   }
 
-  
   public async bookTrainer(payload: any) {
     return await firstValueFrom(
       this.httpClient.post(`${this.baseUrl}/Appointments/book-trainer`, payload)
@@ -158,6 +157,10 @@ export class AppointmentService extends baseAPIClass {
 
   updatePaymentStatus(request: { paymentId: number, newStatus: string }) {
     return firstValueFrom(this.httpClient.post(`${this.baseUrl}/Appointments/update-payment-status`, request));
+  }
+
+  getTrainerAppointments(trainerId: number) {    
+    return firstValueFrom(this.httpClient.get(`${this.baseUrl}/Appointments/trainer/${trainerId}/appointments`));
   }
 
 }
