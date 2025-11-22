@@ -11,7 +11,7 @@ export class PlansService extends baseAPIClass {
     super();
   }
 
-  
+
   public async getMembershipPlans() {
     try {
       return await firstValueFrom(this.httpClient.get(`${this.baseUrl}/Membership/plans`));
@@ -21,7 +21,7 @@ export class PlansService extends baseAPIClass {
     }
   }
 
-  
+
   public async purchaseMembership(payload: { memberId: number; planId: number; paymentMethod: string }) {
     try {
       return await firstValueFrom(
@@ -38,7 +38,7 @@ export class PlansService extends baseAPIClass {
     }
   }
 
-  
+
   public async renewMembership(payload: { memberId: number; membershipId: number; paymentMethod: string }) {
     try {
       return await firstValueFrom(
@@ -58,7 +58,7 @@ export class PlansService extends baseAPIClass {
     }
   }
 
-  
+
   public async getMemberStatus(memberId: number) {
     try {
       return await firstValueFrom(
@@ -74,7 +74,7 @@ export class PlansService extends baseAPIClass {
     }
   }
 
-  
+
   public async getMembershipHistory(memberId: number) {
     try {
       return await firstValueFrom(
@@ -86,18 +86,18 @@ export class PlansService extends baseAPIClass {
     }
   }
 
-  
-  public async createPlan(payload: { 
-    name: string; 
-    duration: number; 
-    price: number; 
-    description: string; 
-    features: string; 
+
+  public async createPlan(payload: {
+    name: string;
+    duration: number;
+    price: number;
+    description: string;
+    features: string;
   }) {
     try {
       return await firstValueFrom(
         this.httpClient.post<{ message: string; planId: number }>(
-          `${this.baseUrl}/Membership/plans`, 
+          `${this.baseUrl}/Membership/plans`,
           payload
         )
       );
@@ -107,41 +107,18 @@ export class PlansService extends baseAPIClass {
     }
   }
 
-  public async updatePlan(id: number, payload: { 
-    name: string; 
-    duration: number; 
-    price: number; 
-    description: string; 
-    features: string; 
-    isActive: boolean;
-  }) {
-    try {
-      return await firstValueFrom(
-        this.httpClient.put<{ message: string }>(
-          `${this.baseUrl}/Membership/plans/${id}`, 
-          payload
-        )
-      );
-    } catch (error) {
-      console.error('Error updating plan:', error);
-      throw error;
-    }
+  public async updatePlan(id: number, payload: any) {
+    return await firstValueFrom(this.httpClient.put(`${this.baseUrl}/Membership/plans/${id}`, payload))
   }
 
   public async deletePlan(id: number) {
-    try {
-      return await firstValueFrom(
-        this.httpClient.delete<{ message: string }>(
-          `${this.baseUrl}/Membership/plans/${id}`
-        )
-      );
-    } catch (error) {
-      console.error('Error deleting plan:', error);
-      throw error;
-    }
+    return await firstValueFrom(
+      this.httpClient.delete(
+        `${this.baseUrl}/Membership/plans/${id}`
+      ))
   }
 
-  
+
   public async getPendingPayments() {
     try {
       return await firstValueFrom(
@@ -153,12 +130,12 @@ export class PlansService extends baseAPIClass {
     }
   }
 
-  
+
   public async updatePaymentStatus(payload: { paymentId: number; newStatus: string }) {
     try {
       return await firstValueFrom(
         this.httpClient.post<{ message: string }>(
-          `${this.baseUrl}/Membership/update-payment-status`, 
+          `${this.baseUrl}/Membership/update-payment-status`,
           payload
         )
       );
@@ -168,12 +145,12 @@ export class PlansService extends baseAPIClass {
     }
   }
 
-  
+
   public async updateMembershipStatus(payload: { membershipId: number; newStatus: string }) {
     try {
       return await firstValueFrom(
         this.httpClient.post<{ message: string }>(
-          `${this.baseUrl}/Membership/update-membership-status`, 
+          `${this.baseUrl}/Membership/update-membership-status`,
           payload
         )
       );
@@ -183,7 +160,7 @@ export class PlansService extends baseAPIClass {
     }
   }
 
-  
+
   public async getBankDetails() {
     try {
       return await firstValueFrom(
@@ -206,7 +183,7 @@ export class PlansService extends baseAPIClass {
     try {
       return await firstValueFrom(
         this.httpClient.post<{ message: string }>(
-          `${this.baseUrl}/Membership/bank-details`, 
+          `${this.baseUrl}/Membership/bank-details`,
           payload
         )
       );
@@ -216,12 +193,12 @@ export class PlansService extends baseAPIClass {
     }
   }
 
-  
+
   public async createStripeSession(memberId: number, planId: number) {
     try {
       return await firstValueFrom(
         this.httpClient.post<{ sessionId: string }>(
-          `${this.baseUrl}/Membership/create-payment-session`, 
+          `${this.baseUrl}/Membership/create-payment-session`,
           { memberId, planId }
         )
       );
@@ -231,12 +208,12 @@ export class PlansService extends baseAPIClass {
     }
   }
 
-  
+
   public async createRenewalPaymentSession(memberId: number, renewalMembershipId: number) {
     try {
       return await firstValueFrom(
         this.httpClient.post<{ sessionId: string }>(
-          `${this.baseUrl}/Membership/create-renewal-payment-session`, 
+          `${this.baseUrl}/Membership/create-renewal-payment-session`,
           { memberId, renewalMembershipId }
         )
       );
@@ -249,13 +226,13 @@ export class PlansService extends baseAPIClass {
   public async confirmStripePayment(sessionId: string) {
     try {
       return await firstValueFrom(
-        this.httpClient.post<{ 
-          message: string; 
-          membershipId: number; 
+        this.httpClient.post<{
+          message: string;
+          membershipId: number;
           status: string;
           endDate: string;
         }>(
-          `${this.baseUrl}/Membership/confirm-stripe-payment`, 
+          `${this.baseUrl}/Membership/confirm-stripe-payment`,
           { sessionId }
         )
       );
