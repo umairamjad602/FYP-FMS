@@ -97,10 +97,10 @@
                     <h3>Member Review</h3>
 
                     <div *ngFor="let review of trainerReviews" class="card mb-3 p-3">
-                        <p><strong>Comment : </strong> {{ review.comment }}</p>
-                        <p><strong>Rating : </strong> ⭐ {{ review.rating }}</p>
-                        <p><strong>Member ID : </strong> {{ review.memberId }}</p>
-                        <p><strong>Date : </strong> {{ review.reviewDate | date: 'medium' }}</p>
+                        <p><strong class="me-1">Comment : </strong> {{ review.comment }}</p>
+                        <p><strong class="me-1">Rating : </strong> {{ review.rating }} ⭐</p>
+                        <p><strong class="me-1">Member ID : </strong> {{ review.memberId }}</p>
+                        <p><strong class="me-1">Date : </strong> {{ review.reviewDate | date: 'medium' }}</p>
                     </div>
                 </div>
 

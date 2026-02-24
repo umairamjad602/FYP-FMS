@@ -10,7 +10,7 @@ import { ToastrService } from 'ngx-toastr';
 
 @Component({
   selector: 'app-sign-in',
-  imports: [RouterLink, ReactiveFormsModule, CommonModule],
+  imports: [ ReactiveFormsModule, CommonModule],
   standalone: true,
   templateUrl: './sign-in.html',
   styleUrl: './sign-in.scss'

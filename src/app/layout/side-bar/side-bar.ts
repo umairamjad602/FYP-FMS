@@ -56,9 +56,9 @@ export class SideBar implements OnInit {
           { name: 'Membership Plan', icon: 'fa-solid fa-list-check', route: '/subscriptions-plans' },
           { name: 'Workout Plan', icon: 'fa-solid fa-dumbbell', route: '/workout-plans' },
           { name: 'Diet Plan', icon: 'fa-solid fa-apple-whole', route: '/diet-plans' },
-          { name: 'Progress', icon: 'fa-solid fa-chart-line', route: '/progress' },
+          { name: 'Log Fitness Progress', icon: 'fa-solid fa-chart-line', route: '/progress' },
           { name: 'Book Appointment', icon: 'fa-solid fa-calendar-plus', route: '/appointments' },
-          { name: 'Reviews', icon: 'fa-solid fa-star', route: '/reviews' }
+          { name: 'Review Trainer', icon: 'fa-solid fa-star', route: '/reviews' }
         ];
         break;
 
